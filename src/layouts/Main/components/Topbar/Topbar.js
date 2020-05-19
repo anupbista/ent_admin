@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-import { AppBar, Toolbar, Badge, Hidden, IconButton } from '@material-ui/core';
+import { AppBar, Toolbar, Hidden, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
 import InputIcon from '@material-ui/icons/Input';
+import axios from 'axios';
+import URL from 'env/env.dev';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -25,7 +26,27 @@ const Topbar = props => {
 
   const classes = useStyles();
 
-  const [notifications] = useState([]);
+  const onLogout = async () => {
+    let userid = localStorage.getItem('userid')
+    try {
+      if(userid){
+        const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token') : '' 
+            }
+          };
+        await axios.get(URL.baseURL + 'auth/logout/'+userid, options);
+        localStorage.clear()
+        // history.push('/login');
+      }else{
+        localStorage.clear()
+        // history.push('/login');
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <AppBar
@@ -40,24 +61,16 @@ const Topbar = props => {
           />
         </RouterLink>
         <div className={classes.flexGrow} />
-        <Hidden mdDown>
-          <IconButton color="inherit">
-            <Badge
-              badgeContent={notifications.length}
-              color="primary"
-              variant="dot"
-            >
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
+        <Hidden smDown>
           <IconButton
             className={classes.signOutButton}
             color="inherit"
+            onClick={onLogout}
           >
             <InputIcon />
           </IconButton>
         </Hidden>
-        <Hidden lgUp>
+        <Hidden smUp>
           <IconButton
             color="inherit"
             onClick={onSidebarOpen}

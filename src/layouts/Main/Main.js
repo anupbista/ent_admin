@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import { useMediaQuery } from '@material-ui/core';
+import axios from 'axios';
 
-import { Sidebar, Topbar, Footer } from './components';
+import { Sidebar, Topbar } from './components';
+import URL from 'env/env.dev';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -18,7 +20,8 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: 240
   },
   content: {
-    height: '100%'
+    height: '100%',
+    background: '#fff'
   }
 }));
 
@@ -32,6 +35,7 @@ const Main = props => {
   });
 
   const [openSidebar, setOpenSidebar] = useState(false);
+  const [user, setUser] = useState({});
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
@@ -40,6 +44,34 @@ const Main = props => {
   const handleSidebarClose = () => {
     setOpenSidebar(false);
   };
+
+  useEffect( ()=> {
+    let userid = localStorage.getItem('userid');
+    try {
+      async function fetchData(){
+        if(userid){
+          const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
+            }
+          };
+          let res = await axios.get(URL.baseURL + 'users/'+userid, options);
+          let imagepath = res.data.imagepath ? res.data.imagepath.split('/') : null
+          if(imagepath){
+            imagepath.shift();
+            imagepath = imagepath.join('/')
+            res.data.imagepath = res.data.imagepath ? URL.appURL + imagepath : null
+          }
+          setUser(res.data)
+        }
+      }
+      fetchData();
+    } catch (error) {
+      console.log(error)
+    }
+  }, [])
+
 
   const shouldOpenSidebar = isDesktop ? true : openSidebar;
 
@@ -54,11 +86,11 @@ const Main = props => {
       <Sidebar
         onClose={handleSidebarClose}
         open={shouldOpenSidebar}
+        user={user}
         variant={isDesktop ? 'persistent' : 'temporary'}
       />
       <main className={classes.content}>
         {children}
-        <Footer />
       </main>
     </div>
   );

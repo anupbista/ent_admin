@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
 import { Button } from '@material-ui/core';
-
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import SearchIcon from '@material-ui/icons/Search';
+import DirectionsIcon from '@material-ui/icons/Directions';
 import { SearchInput } from 'components';
 
 const useStyles = makeStyles(theme => ({
-  root: {},
+  root: {
+    marginBottom: 20
+  },
   row: {
     height: '42px',
     display: 'flex',
@@ -24,14 +32,30 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1)
   },
   searchInput: {
-    marginRight: theme.spacing(1)
+    paddingLeft: 15
   }
 }));
 
 const UsersToolbar = props => {
-  const { className, ...rest } = props;
-
+  const { className, onOpen, ...rest } = props;
+  const [searchInput, setSearchInput] = useState(null);
   const classes = useStyles();
+
+  const handleNewPressed = () => {
+    props.onClose(null);
+  }
+
+  const onChangeHandler = (e) => {
+    setSearchInput(e.target.value)
+  }
+  
+  const onSearch = () => {
+    onOpen(searchInput)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  }
 
   return (
     <div
@@ -39,21 +63,28 @@ const UsersToolbar = props => {
       className={clsx(classes.root, className)}
     >
       <div className={classes.row}>
+      <form onSubmit={handleSubmit}>
+
+      <Paper className={classes.root}>
+      <InputBase
+        className={classes.searchInput}
+        onChange={onChangeHandler}
+        placeholder="Search User"
+        inputProps={{ 'aria-label': 'search user' }}
+      />
+      <IconButton onClick={onSearch} className={classes.iconButton} aria-label="search">
+        <SearchIcon />
+      </IconButton>
+    </Paper>
+    </form>
         <span className={classes.spacer} />
-        <Button className={classes.importButton}>Import</Button>
-        <Button className={classes.exportButton}>Export</Button>
         <Button
           color="primary"
+          onClick={handleNewPressed}
           variant="contained"
         >
           Add user
         </Button>
-      </div>
-      <div className={classes.row}>
-        <SearchInput
-          className={classes.searchInput}
-          placeholder="Search user"
-        />
       </div>
     </div>
   );
