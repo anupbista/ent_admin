@@ -16,13 +16,14 @@ import EnhancedTableHead from '../EnhancedTableHead';
 import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 import FormDialog from '../FormDialog';
-import UsersToolbar from '../UsersToolbar';
+import MoviesToolbar from '../MoviesToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
 import axios from 'axios';
 import URL from 'env/env.dev';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
+import Rating from '@material-ui/lab/Rating';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -80,13 +81,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const UsersTable = props => {
+const MoviesTable = props => {
   const { headCells } = props;
-  const [users, setUsers] = useState(props.users);
+  const [movies, setMovies] = useState(props.movies);
 
   useEffect(() => {
-    setUsers(props.users)
-  }, [props.users]);
+    setMovies(props.movies)
+  }, [props.movies]);
 
   const classes = useStyles();
   const [order, setOrder] = useState('asc');
@@ -104,7 +105,7 @@ const UsersTable = props => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = users.map((n) => n.id);
+      const newSelecteds = movies.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
@@ -147,24 +148,24 @@ const UsersTable = props => {
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, movies.length - page * rowsPerPage);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModal] = useState(false);
-  const [user, setUser] = useState(null);
+  const [movie, setMovie] = useState(null);
   const [isNew, setIsNew] = useState(false);
 
   const handleEditClickOpen = (row) => {
     if (row) setIsNew(false)
     else setIsNew(true)
     setModalOpen(true);
-    setUser(row)
+    setMovie(row)
   };
 
   const handleDialogClose = (loadData) => {
     props.onClose(loadData);
     setModalOpen(false);
-    setUser(null);
+    setMovie(null);
   }
 
   const openDeleteModal = () => {
@@ -175,7 +176,7 @@ const UsersTable = props => {
   const [error, setError] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleUserDelete = async () => {
+  const handleMovieDelete = async () => {
     try {
       setDeleteModal(false);
       setLoading(true);
@@ -185,7 +186,7 @@ const UsersTable = props => {
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      await axios.delete(URL.baseURL + 'users/' + selected.join(','), options);
+      await axios.delete(URL.baseURL + 'movies/' + selected.join(','), options);
       setSubmitted(true);
       setSelected([])
       setLoading(false);
@@ -209,30 +210,30 @@ const UsersTable = props => {
   }
 
   const [searchInput, setSearchInput] = useState('');
-  const [mUsers, setmUsers] = useState(users);
+  const [mMovies, setmMovies] = useState(movies);
 
   const onSearchChangeHandler = (inputValue) => {
     setSearchInput(inputValue)
   }
 
   useEffect(() => {
-    setmUsers(users)
-    setmUsers(users.filter(user => {
+    setmMovies(movies)
+    setmMovies(movies.filter(movie => {
       return (
-        user.username.toLowerCase().search(searchInput.toLowerCase()) !== -1
+        movie.name.toLowerCase().search(searchInput.toLowerCase()) !== -1
       );
     }))
-  }, [users,searchInput])
+  }, [movies,searchInput])
 
   return (
     <div className={classes.root}>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message="User deleted" onClose={handleSnackbarClose}></Snackbar>
+      <Snackbar open={submitted && !error} autoHideDuration={3000} message="Movie deleted" onClose={handleSnackbarClose}></Snackbar>
       <Backdrop open={loading} className={classes.backdrop}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleUserDelete} onClose={onClose} />
-      <FormDialog modalOpen={modalOpen} user={user} onClose={handleDialogClose} isNew={isNew} />
-      <UsersToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
+      <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleMovieDelete} onClose={onClose} />
+      <FormDialog modalOpen={modalOpen} movie={movie} onClose={handleDialogClose} isNew={isNew} />
+      <MoviesToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
       <Paper className={classes.paper}>
         <EnhancedTableToolbar numSelected={selected.length} openDeleteModal={openDeleteModal} />
         <TableContainer>
@@ -250,20 +251,20 @@ const UsersTable = props => {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={mUsers.length}
+              rowCount={mMovies.length}
             />
             <TableBody>
               {
-                mUsers.length < 1 && (
+                mMovies.length < 1 && (
                   <TableRow>
                     <TableCell colSpan={6} className={classes.emptyRow}>
-                      No user found
+                      No movie found
                     </TableCell>
                   </TableRow>
                 )
                 }
                 {
-              stableSort(mUsers, getComparator(order, orderBy))
+              stableSort(mMovies, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.id);
@@ -285,11 +286,13 @@ const UsersTable = props => {
                   />
                 </TableCell>
                 <TableCell component="th" id={labelId} scope="row" padding="none">
-                  {row.firstname} {row.middlename} {row.lastname}
+                  {row.name}
                 </TableCell>
-                <TableCell align="left">{row.username}</TableCell>
-                <TableCell align="left">{row.role}</TableCell>
-                <TableCell align="left">{row.email}</TableCell>
+                <TableCell align="left">{row.description}</TableCell>
+                <TableCell align="left">{row.releasedate}</TableCell>
+                <TableCell align="left">
+                  <Rating name="read-only" max={10} value={row.rating} readOnly />
+                </TableCell>
                 <TableCell align="left">
                   <IconButton aria-label="edit" onClick={() => handleEditClickOpen(row)}>
                     <EditIcon />
@@ -308,11 +311,11 @@ const UsersTable = props => {
           </Table>
         </TableContainer>
         {
-          mUsers.length > 0 && (
+          mMovies.length > 0 && (
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={mUsers.length}
+              count={mMovies.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onChangePage={handleChangePage}
@@ -329,9 +332,9 @@ const UsersTable = props => {
   );
 };
 
-UsersTable.propTypes = {
+MoviesTable.propTypes = {
   className: PropTypes.string,
-  users: PropTypes.array.isRequired
+  movies: PropTypes.array.isRequired
 };
 
-export default UsersTable;
+export default MoviesTable;

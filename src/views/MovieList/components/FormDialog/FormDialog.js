@@ -20,24 +20,35 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
 const schema = {
-  firstname: {
+  name: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  lastname: {
+  description: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  email: {
-    presence: { allowEmpty: false, message: 'is required' },
-    email: true
-  },
-  role: {
+  releasedate: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  username: {
-    presence: { allowEmpty: false, message: 'is required' },
-    length: {
-      maximum: 64
-    }
+  downloadlink: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  downloadtext: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  watchlink: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  watchtext: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  rating: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  country: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  genre: {
+    presence: { allowEmpty: false, message: 'is required' }
   },
 };
 
@@ -66,12 +77,18 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     marginBottom: 25
   },
-  multiInput:{
+  multiInput3: {
     display: 'flex',
-    '& > div:nth-of-type(2)':{
+    '& > div:nth-of-type(2)': {
       marginLeft: 20,
       marginRight: 20
-  }
+    }
+  },
+  multiInput2: {
+    display: 'flex',
+    '& > div:nth-of-type(2)': {
+      marginLeft: 20
+    }
   }
 }));
 
@@ -86,30 +103,29 @@ const FormDialog = (props) => {
   const [formState, setFormState] = useState({
     isValid: false,
     values: {
-      role: "Admin"
+      country: ''
     },
     touched: {},
     errors: {}
   });
 
   useEffect(() => {
-    let muser = {
-      role: "Admin"
-    }
-    if (props.user) {
-      let imagepath = props.user.imagepath ? props.user.imagepath.split('/') : null
+    let mmovie = {country: '', genre: ''}
+    if(props.movie && props.movie.id){
+      mmovie = {}
+      let imagepath = props.movie.imagepath ? props.movie.imagepath.split('/') : null
       if (imagepath) {
         imagepath.shift();
         imagepath = imagepath.join('/')
         imagepath = imagepath ? URL.appURL + imagepath : null
       }
-      muser = { ...props.user, imagepath: imagepath, role: "Admin" }
+      mmovie = { ...props.movie, imagepath: imagepath, genre: props.movie.genre[0].id }
     }
     setFormState(formState => ({
       ...formState,
-      values: muser
+      values: mmovie
     }));
-  }, [props.user]);
+  }, [props.movie]);
 
   useEffect(() => {
     const errors = validate(formState.values, schema);
@@ -135,13 +151,12 @@ const FormDialog = (props) => {
         [event.target.name]: true
       }
     }));
-    console.log(event.target)
   };
 
   const handleClose = () => {
     setFormState({
       isValid: false,
-      values: {},
+      values: {country: '', genre: ''},
       touched: {},
       errors: {}
     })
@@ -156,6 +171,11 @@ const FormDialog = (props) => {
 
   useEffect(() => {
     setOpen(props.modalOpen);
+    if (props.modalOpen) {
+      if(!(countries.length > 0)) getCountries();
+      if(!(genres.length > 0)) getGenres();
+      
+    }
   }, [props.modalOpen])
 
   const hasError = field =>
@@ -171,27 +191,35 @@ const FormDialog = (props) => {
     };
     const data = {
       id: formState.values.id || null,
-      firstname: formState.values.firstname,
-      middlename: formState.values.middlename,
-      lastname: formState.values.lastname,
-      role: formState.values.role,
-      email: formState.values.email,
-      username: formState.values.username,
+      name: formState.values.name,
+      description: formState.values.description,
+      releasedate: formState.values.releasedate,
+      downloadlink: formState.values.downloadlink,
+      downloadtext: formState.values.downloadtext,
+      watchlink: formState.values.watchlink,
+      watchtext: formState.values.watchtext,
+      rating: formState.values.rating,
+      country: formState.values.country,
+      genre: [
+       {
+        id: formState.values.genre
+       }
+      ],
       imagepath: null
     }
     try {
       setLoading(true);
       if (data.id) {
         delete data.imagepath;
-        await axios.patch(URL.baseURL + 'users/' + data.id, data, options);
+        await axios.patch(URL.baseURL + 'movies/' + data.id, data, options);
       } else {
         delete data.id;
-        let res = await axios.post(URL.baseURL + 'users', data, options);
+        let res = await axios.post(URL.baseURL + 'movies', data, options);
         // upload iamge
         if (file) {
           let formData = new FormData();    //formdata object
           formData.append('image', file);
-          await axios.post(URL.baseURL + 'users/' + res.id + '/image', formData, options);
+          await axios.post(URL.baseURL + 'movies/' + res.id + '/image', formData, options);
         }
       }
       setSubmitted(true)
@@ -235,7 +263,7 @@ const FormDialog = (props) => {
         formData.append('image', upfile);
         setSubmitted(true)
         setLoading(true);
-        await axios.post(URL.baseURL + 'users/' + formState.values.id + '/image', formData, options);
+        await axios.post(URL.baseURL + 'movies/' + formState.values.id + '/image', formData, options);
         setLoading(false);
         setError(false);
       } catch (error) {
@@ -248,6 +276,38 @@ const FormDialog = (props) => {
     }
   };
 
+  const [countries, setCountries] = useState([]);
+
+  const getCountries = async () => {
+    try {
+      setLoading(true);
+      let res = await axios.get('https://restcountries.eu/rest/v1');
+      setLoading(false);
+      setCountries(res.data)
+    } catch (error) {
+      setLoading(false);
+    }
+  }
+
+  const [genres, setGenres] = useState([]);
+
+  const getGenres = async () => {
+    try {
+      setLoading(true);
+      const options = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
+        }
+      };
+      let res = await axios.get(URL.baseURL + 'genre', options);
+      setLoading(false);
+      setGenres(res.data)
+    } catch (error) {
+      setLoading(false);
+    }
+  }
+
   return (
     <div>
 
@@ -255,10 +315,10 @@ const FormDialog = (props) => {
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'User added' : 'User updated'} onClose={handleSnackbarClose}></Snackbar>
+      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Movie added' : 'Movie updated'} onClose={handleSnackbarClose}></Snackbar>
 
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">{isNew ? 'Add User' : 'Edit User'}</DialogTitle>
+        <DialogTitle id="form-dialog-title">{isNew ? 'Add Movie' : 'Edit Movie'}</DialogTitle>
         <DialogContent>
           <form
             onSubmit={handleUserChange}>
@@ -267,7 +327,7 @@ const FormDialog = (props) => {
               <Avatar
                 alt="Person"
                 className={classes.avatar}
-                src={fileBase64 ? fileBase64 : formState.values.imagepath ? formState.values.imagepath : "/images/avatars/avatar-male.svg"}
+                src={fileBase64 ? fileBase64 : formState.values.imagepath ? formState.values.imagepath : "/images/movie.svg"}
               />
               <input
                 accept="image/*"
@@ -283,91 +343,165 @@ const FormDialog = (props) => {
               </label>
             </div>
 
-            <div className={classes.multiInput}>
+            <div className={classes.multiInput2}>
               <TextField
                 className={classes.textField}
-                error={hasError('firstname')}
+                error={hasError('name')}
                 fullWidth
                 helperText={
-                  hasError('firstname') ? formState.errors.firstname[0] : null
+                  hasError('name') ? formState.errors.name[0] : null
                 }
-                label="Firstname"
-                name="firstname"
+                label="Name"
+                name="name"
                 onChange={handleChange}
                 type="text"
-                value={formState.values.firstname || ''}
+                value={formState.values.name || ''}
                 variant="outlined"
               />
               <TextField
                 className={classes.textField}
-                error={hasError('middlename')}
+                error={hasError('releasedate')}
                 fullWidth
                 helperText={
-                  hasError('middlename') ? formState.errors.middlename[0] : null
+                  hasError('releasedate') ? formState.errors.releasedate[0] : null
                 }
-                label="Middlename"
-                name="middlename"
+                label="Released date"
+                name="releasedate"
                 onChange={handleChange}
                 type="text"
-                value={formState.values.middlename || ''}
-                variant="outlined"
-              />
-              <TextField
-                className={classes.textField}
-                error={hasError('lastname')}
-                fullWidth
-                helperText={
-                  hasError('lastname') ? formState.errors.lastname[0] : null
-                }
-                label="Lastname"
-                name="lastname"
-                onChange={handleChange}
-                type="text"
-                value={formState.values.lastname || ''}
+                value={formState.values.releasedate || ''}
                 variant="outlined"
               />
             </div>
             <TextField
+                className={classes.textField}
+                error={hasError('description')}
+                fullWidth
+                helperText={
+                  hasError('description') ? formState.errors.description[0] : null
+                }
+                label="Description"
+                name="description"
+                multiline
+                rows={4}
+                onChange={handleChange}
+                type="text"
+                value={formState.values.description || ''}
+                variant="outlined"
+              />
+              <div className={classes.multiInput2}>
+              <TextField
               className={classes.textField}
-              error={hasError('email')}
+              error={hasError('downloadlink')}
               fullWidth
               helperText={
-                hasError('email') ? formState.errors.email[0] : null
+                hasError('downloadlink') ? formState.errors.downloadlink[0] : null
               }
-              label="Email"
-              name="email"
+              label="Downloadlink"
+              name="downloadlink"
               onChange={handleChange}
-              type="email"
-              value={formState.values.email || ''}
+              value={formState.values.downloadlink || ''}
               variant="outlined"
             />
             <TextField
               className={classes.textField}
-              error={hasError('username')}
+              error={hasError('downloadtext')}
               fullWidth
-
-              label="Username"
-              name="username"
+              label="Downloadtext"
+              name="downloadtext"
+              helperText={
+                hasError('downloadtext') ? formState.errors.downloadtext[0] : null
+              }
               onChange={handleChange}
               type="text"
-              value={formState.values.username || ''}
+              value={formState.values.downloadtext || ''}
               variant="outlined"
             />
+              </div>
+              <div className={classes.multiInput2}>
+              <TextField
+              className={classes.textField}
+              error={hasError('watchlink')}
+              fullWidth
+              label="Watchlink"
+              name="watchlink"
+              helperText={
+                hasError('watchlink') ? formState.errors.watchlink[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.watchlink || ''}
+              variant="outlined"
+            />
+            <TextField
+              className={classes.textField}
+              error={hasError('watchtext')}
+              fullWidth
+              label="Watchtext"
+              name="watchtext"
+              helperText={
+                hasError('watchtext') ? formState.errors.watchtext[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.watchtext || ''}
+              variant="outlined"
+            />
+                </div>
+           
+            
+            <TextField
+              className={classes.textField}
+              error={hasError('rating')}
+              fullWidth
+              label="Rating"
+              name="rating"
+              helperText={
+                hasError('rating') ? formState.errors.rating[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.rating || ''}
+              variant="outlined"
+            />
+            <div className={classes.multiInput2}>
             <FormControl variant="outlined" fullWidth className={classes.textField}>
-              <InputLabel id="user-role-label">Role</InputLabel>
+              <InputLabel id="country-label">Country</InputLabel>
               <Select
-                labelId="user-role-label"
-                id="user-role"
-                error={hasError('role')}
-                label="Role"
-                name="role"
-                value={formState.values.role || 'Admin'}
-                onChange={handleChange}
-              >
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem disabled value="Moderator">Moderator</MenuItem>
+                labelId="country-label"
+                id="country"
+                error={hasError('country')}
+                label="Country"
+                name="country"
+                value={formState.values.country}
+                onChange={handleChange}>
+
+                {countries.map((item, keyIndex) => {
+                  return (
+                  <MenuItem key={keyIndex} value={item.name}>{item.name}</MenuItem>)
+                })
+                }
               </Select>
             </FormControl>
+            <FormControl variant="outlined" fullWidth className={classes.textField}>
+              <InputLabel id="genre-label">Genre</InputLabel>
+              <Select
+                labelId="genre-label"
+                id="genre"
+                error={hasError('genre')}
+                label="Genre"
+                name="genre"
+                value={formState.values.genre}
+                onChange={handleChange}>
+                {genres.map((item, keyIndex) => {
+                  return (
+                  <MenuItem key={keyIndex} value={item.id}>{item.name}</MenuItem>)
+                })
+                }
+              </Select>
+            </FormControl>
+            </div>
+            
           </form>
         </DialogContent>
         <DialogActions className={classes.dialogaction}>

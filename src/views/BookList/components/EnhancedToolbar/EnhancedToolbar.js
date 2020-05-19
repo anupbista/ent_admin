@@ -48,7 +48,7 @@ const useToolbarStyles = makeStyles((theme) => ({
           </Typography>
         ) : (
           <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
-            Users
+            Books
           </Typography>
         )}
   

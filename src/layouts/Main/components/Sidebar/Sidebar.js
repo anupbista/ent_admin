@@ -8,6 +8,8 @@ import PeopleIcon from '@material-ui/icons/People';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import SettingsIcon from '@material-ui/icons/Settings';
 import { Profile, SidebarNav } from './components';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
+import TheatersIcon from '@material-ui/icons/Theaters';
 
 const useStyles = makeStyles(theme => ({
   drawer: {
@@ -51,22 +53,12 @@ const Sidebar = props => {
     {
       title: 'Movies',
       href: '/movies',
-      icon: <PeopleIcon />
+      icon: <TheatersIcon />
     },
     {
       title: 'Books',
       href: '/books',
-      icon: <PeopleIcon />
-    },
-    {
-      title: 'Account',
-      href: '/account',
-      icon: <AccountBoxIcon />
-    },
-    {
-      title: 'Settings',
-      href: '/settings',
-      icon: <SettingsIcon />
+      icon: <MenuBookIcon />
     }
   ];
 

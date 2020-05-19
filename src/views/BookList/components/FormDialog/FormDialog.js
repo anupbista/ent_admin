@@ -14,30 +14,37 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
 import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import Avatar from '@material-ui/core/Avatar';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 
 const schema = {
-  firstname: {
+  name: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  lastname: {
+  description: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  email: {
-    presence: { allowEmpty: false, message: 'is required' },
-    email: true
-  },
-  role: {
+  releasedate: {
     presence: { allowEmpty: false, message: 'is required' }
   },
-  username: {
-    presence: { allowEmpty: false, message: 'is required' },
-    length: {
-      maximum: 64
-    }
+  downloadlink: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  downloadtext: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  readlink: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  readtext: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  rating: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  publisher: {
+    presence: { allowEmpty: false, message: 'is required' }
+  },
+  author: {
+    presence: { allowEmpty: false, message: 'is required' }
   },
 };
 
@@ -66,12 +73,18 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     marginBottom: 25
   },
-  multiInput:{
+  multiInput3: {
     display: 'flex',
-    '& > div:nth-of-type(2)':{
+    '& > div:nth-of-type(2)': {
       marginLeft: 20,
       marginRight: 20
-  }
+    }
+  },
+  multiInput2: {
+    display: 'flex',
+    '& > div:nth-of-type(2)': {
+      marginLeft: 20
+    }
   }
 }));
 
@@ -86,30 +99,29 @@ const FormDialog = (props) => {
   const [formState, setFormState] = useState({
     isValid: false,
     values: {
-      role: "Admin"
+      country: ''
     },
     touched: {},
     errors: {}
   });
 
   useEffect(() => {
-    let muser = {
-      role: "Admin"
-    }
-    if (props.user) {
-      let imagepath = props.user.imagepath ? props.user.imagepath.split('/') : null
+    let mbook = {}
+    if(props.book && props.book.id){
+      mbook = {}
+      let imagepath = props.book.imagepath ? props.book.imagepath.split('/') : null
       if (imagepath) {
         imagepath.shift();
         imagepath = imagepath.join('/')
         imagepath = imagepath ? URL.appURL + imagepath : null
       }
-      muser = { ...props.user, imagepath: imagepath, role: "Admin" }
+      mbook = { ...props.book, imagepath: imagepath }
     }
     setFormState(formState => ({
       ...formState,
-      values: muser
+      values: mbook
     }));
-  }, [props.user]);
+  }, [props.book]);
 
   useEffect(() => {
     const errors = validate(formState.values, schema);
@@ -135,13 +147,12 @@ const FormDialog = (props) => {
         [event.target.name]: true
       }
     }));
-    console.log(event.target)
   };
 
   const handleClose = () => {
     setFormState({
       isValid: false,
-      values: {},
+      values: {country: '', genre: ''},
       touched: {},
       errors: {}
     })
@@ -171,27 +182,31 @@ const FormDialog = (props) => {
     };
     const data = {
       id: formState.values.id || null,
-      firstname: formState.values.firstname,
-      middlename: formState.values.middlename,
-      lastname: formState.values.lastname,
-      role: formState.values.role,
-      email: formState.values.email,
-      username: formState.values.username,
+      name: formState.values.name,
+      description: formState.values.description,
+      releasedate: formState.values.releasedate,
+      downloadlink: formState.values.downloadlink,
+      downloadtext: formState.values.downloadtext,
+      readlink: formState.values.readlink,
+      readtext: formState.values.readtext,
+      rating: formState.values.rating,
+      author: formState.values.author,
+      publisher: formState.values.publisher,
       imagepath: null
     }
     try {
       setLoading(true);
       if (data.id) {
         delete data.imagepath;
-        await axios.patch(URL.baseURL + 'users/' + data.id, data, options);
+        await axios.patch(URL.baseURL + 'books/' + data.id, data, options);
       } else {
         delete data.id;
-        let res = await axios.post(URL.baseURL + 'users', data, options);
+        let res = await axios.post(URL.baseURL + 'books', data, options);
         // upload iamge
         if (file) {
           let formData = new FormData();    //formdata object
           formData.append('image', file);
-          await axios.post(URL.baseURL + 'users/' + res.id + '/image', formData, options);
+          await axios.post(URL.baseURL + 'books/' + res.id + '/image', formData, options);
         }
       }
       setSubmitted(true)
@@ -235,7 +250,7 @@ const FormDialog = (props) => {
         formData.append('image', upfile);
         setSubmitted(true)
         setLoading(true);
-        await axios.post(URL.baseURL + 'users/' + formState.values.id + '/image', formData, options);
+        await axios.post(URL.baseURL + 'books/' + formState.values.id + '/image', formData, options);
         setLoading(false);
         setError(false);
       } catch (error) {
@@ -255,10 +270,10 @@ const FormDialog = (props) => {
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'User added' : 'User updated'} onClose={handleSnackbarClose}></Snackbar>
+      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Book added' : 'Book updated'} onClose={handleSnackbarClose}></Snackbar>
 
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">{isNew ? 'Add User' : 'Edit User'}</DialogTitle>
+        <DialogTitle id="form-dialog-title">{isNew ? 'Add book' : 'Edit book'}</DialogTitle>
         <DialogContent>
           <form
             onSubmit={handleUserChange}>
@@ -267,7 +282,7 @@ const FormDialog = (props) => {
               <Avatar
                 alt="Person"
                 className={classes.avatar}
-                src={fileBase64 ? fileBase64 : formState.values.imagepath ? formState.values.imagepath : "/images/avatars/avatar-male.svg"}
+                src={fileBase64 ? fileBase64 : formState.values.imagepath ? formState.values.imagepath : "/images/book.svg"}
               />
               <input
                 accept="image/*"
@@ -283,91 +298,158 @@ const FormDialog = (props) => {
               </label>
             </div>
 
-            <div className={classes.multiInput}>
+            <div className={classes.multiInput2}>
               <TextField
                 className={classes.textField}
-                error={hasError('firstname')}
+                error={hasError('name')}
                 fullWidth
                 helperText={
-                  hasError('firstname') ? formState.errors.firstname[0] : null
+                  hasError('name') ? formState.errors.name[0] : null
                 }
-                label="Firstname"
-                name="firstname"
+                label="Name"
+                name="name"
                 onChange={handleChange}
                 type="text"
-                value={formState.values.firstname || ''}
+                value={formState.values.name || ''}
                 variant="outlined"
               />
               <TextField
                 className={classes.textField}
-                error={hasError('middlename')}
+                error={hasError('releasedate')}
                 fullWidth
                 helperText={
-                  hasError('middlename') ? formState.errors.middlename[0] : null
+                  hasError('releasedate') ? formState.errors.releasedate[0] : null
                 }
-                label="Middlename"
-                name="middlename"
+                label="Released date"
+                name="releasedate"
                 onChange={handleChange}
                 type="text"
-                value={formState.values.middlename || ''}
-                variant="outlined"
-              />
-              <TextField
-                className={classes.textField}
-                error={hasError('lastname')}
-                fullWidth
-                helperText={
-                  hasError('lastname') ? formState.errors.lastname[0] : null
-                }
-                label="Lastname"
-                name="lastname"
-                onChange={handleChange}
-                type="text"
-                value={formState.values.lastname || ''}
+                value={formState.values.releasedate || ''}
                 variant="outlined"
               />
             </div>
             <TextField
+                className={classes.textField}
+                error={hasError('description')}
+                fullWidth
+                helperText={
+                  hasError('description') ? formState.errors.description[0] : null
+                }
+                label="Description"
+                name="description"
+                multiline
+                rows={4}
+                onChange={handleChange}
+                type="text"
+                value={formState.values.description || ''}
+                variant="outlined"
+              />
+              <div className={classes.multiInput2}>
+              <TextField
               className={classes.textField}
-              error={hasError('email')}
+              error={hasError('downloadlink')}
               fullWidth
               helperText={
-                hasError('email') ? formState.errors.email[0] : null
+                hasError('downloadlink') ? formState.errors.downloadlink[0] : null
               }
-              label="Email"
-              name="email"
+              label="Downloadlink"
+              name="downloadlink"
               onChange={handleChange}
-              type="email"
-              value={formState.values.email || ''}
+              value={formState.values.downloadlink || ''}
               variant="outlined"
             />
             <TextField
               className={classes.textField}
-              error={hasError('username')}
+              error={hasError('downloadtext')}
               fullWidth
-
-              label="Username"
-              name="username"
+              label="Downloadtext"
+              name="downloadtext"
+              helperText={
+                hasError('downloadtext') ? formState.errors.downloadtext[0] : null
+              }
               onChange={handleChange}
               type="text"
-              value={formState.values.username || ''}
+              value={formState.values.downloadtext || ''}
               variant="outlined"
             />
-            <FormControl variant="outlined" fullWidth className={classes.textField}>
-              <InputLabel id="user-role-label">Role</InputLabel>
-              <Select
-                labelId="user-role-label"
-                id="user-role"
-                error={hasError('role')}
-                label="Role"
-                name="role"
-                value={formState.values.role || 'Admin'}
-                onChange={handleChange}
-              >
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem disabled value="Moderator">Moderator</MenuItem>
-              </Select>
-            </FormControl>
+              </div>
+              <div className={classes.multiInput2}>
+              <TextField
+              className={classes.textField}
+              error={hasError('readlink')}
+              fullWidth
+              label="Readlink"
+              name="readlink"
+              helperText={
+                hasError('readlink') ? formState.errors.readlink[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.readlink || ''}
+              variant="outlined"
+            />
+            <TextField
+              className={classes.textField}
+              error={hasError('readtext')}
+              fullWidth
+              label="Readtext"
+              name="readtext"
+              helperText={
+                hasError('readtext') ? formState.errors.readtext[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.readtext || ''}
+              variant="outlined"
+            />
+                </div>
+           
+            
+            <TextField
+              className={classes.textField}
+              error={hasError('rating')}
+              fullWidth
+              label="Rating"
+              name="rating"
+              helperText={
+                hasError('rating') ? formState.errors.rating[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.rating || ''}
+              variant="outlined"
+            />
+            <div className={classes.multiInput2}>
+            <TextField
+              className={classes.textField}
+              error={hasError('author')}
+              fullWidth
+              label="Author"
+              name="author"
+              helperText={
+                hasError('author') ? formState.errors.author[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.author || ''}
+              variant="outlined"
+            />
+            <TextField
+              className={classes.textField}
+              error={hasError('publisher')}
+              fullWidth
+              label="Publisher"
+              name="publisher"
+              helperText={
+                hasError('publisher') ? formState.errors.publisher[0] : null
+              }
+              onChange={handleChange}
+              type="text"
+              value={formState.values.publisher || ''}
+              variant="outlined"
+            />
+            </div>
+            
           </form>
         </DialogContent>
         <DialogActions className={classes.dialogaction}>

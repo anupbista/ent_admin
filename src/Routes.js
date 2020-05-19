@@ -7,6 +7,8 @@ import { Main as MainLayout, Minimal as MinimalLayout } from './layouts';
 import {
   Dashboard as DashboardView,
   UserList as UserListView,
+  MovieList as MovieListView,
+  BookList as BookListView,
   Account as AccountView,
   Settings as SettingsView,
   SignIn as SignInView,
@@ -24,6 +26,7 @@ const Routes = () => {
       <RouteWithLayout
         component={DashboardView}
         exact
+        authGuard={true}
         layout={MainLayout}
         path="/dashboard"
       />
@@ -34,13 +37,13 @@ const Routes = () => {
         path="/users"
       />
        <RouteWithLayout
-        component={UserListView}
+        component={MovieListView}
         exact
         layout={MainLayout}
         path="/movies"
       />
        <RouteWithLayout
-        component={UserListView}
+        component={BookListView}
         exact
         layout={MainLayout}
         path="/books"

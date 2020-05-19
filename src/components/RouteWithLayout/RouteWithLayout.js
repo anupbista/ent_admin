@@ -1,18 +1,34 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route, Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const RouteWithLayout = props => {
-  const { layout: Layout, component: Component, ...rest } = props;
+  const { layout: Layout, component: Component, authGuard,...rest } = props;
 
   return (
     <Route
       {...rest}
-      render={matchProps => (
-        <Layout>
-          <Component {...matchProps} />
-        </Layout>
-      )}
+      render={matchProps => {
+        if(authGuard){
+          if(localStorage.getItem('access_token')){
+            return (
+              <Layout>
+                <Component {...matchProps} />
+              </Layout>
+            )
+          }else{
+            return(
+              <Redirect to="/login" />
+            )
+          }
+        }else{
+          return (
+            <Layout>
+              <Component {...matchProps} />
+            </Layout>
+          )
+        }
+      }}
     />
   );
 };

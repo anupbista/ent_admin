@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
 import { AppBar, Toolbar, Hidden, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import InputIcon from '@material-ui/icons/Input';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import axios from 'axios';
 import URL from 'env/env.dev';
+import Paper from '@material-ui/core/Paper';
+import MenuItem from '@material-ui/core/MenuItem';
+import Menu from '@material-ui/core/Menu';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -15,9 +18,6 @@ const useStyles = makeStyles(theme => ({
   },
   flexGrow: {
     flexGrow: 1
-  },
-  signOutButton: {
-    marginLeft: theme.spacing(1)
   }
 }));
 
@@ -26,27 +26,38 @@ const Topbar = props => {
 
   const classes = useStyles();
 
-  const onLogout = async () => {
+  const onLogout = async (props) => {
     let userid = localStorage.getItem('userid')
+    handleClose();
     try {
-      if(userid){
+      if (userid) {
         const options = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token') : '' 
-            }
-          };
-        await axios.get(URL.baseURL + 'auth/logout/'+userid, options);
-        localStorage.clear()
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
+          }
+        };
+        // await axios.get(URL.baseURL + 'auth/logout/'+userid, options);
+        // localStorage.clear()
         // history.push('/login');
-      }else{
-        localStorage.clear()
+      } else {
+        // localStorage.clear()
         // history.push('/login');
       }
     } catch (error) {
       console.log(error)
     }
   }
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <AppBar
@@ -61,15 +72,22 @@ const Topbar = props => {
           />
         </RouterLink>
         <div className={classes.flexGrow} />
-        <Hidden smDown>
-          <IconButton
-            className={classes.signOutButton}
+        <IconButton
             color="inherit"
-            onClick={onLogout}
+            onClick={handleClick}
           >
-            <InputIcon />
+            <AccountCircleIcon />
           </IconButton>
-        </Hidden>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            {/* <MenuItem onClick={handleClose}>Profile</MenuItem> */}
+            <MenuItem onClick={onLogout}>Logout</MenuItem>
+          </Menu>
         <Hidden smUp>
           <IconButton
             color="inherit"
