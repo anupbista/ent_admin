@@ -191,7 +191,7 @@ const FormDialog = (props) => {
         if (file) {
           let formData = new FormData();    //formdata object
           formData.append('image', file);
-          await axios.post(URL.baseURL + 'users/' + res.id + '/image', formData, options);
+          await axios.post(URL.baseURL + 'users/' + res.data.id + '/image', formData, options);
         }
       }
       setSubmitted(true)

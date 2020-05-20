@@ -219,7 +219,7 @@ const FormDialog = (props) => {
         if (file) {
           let formData = new FormData();    //formdata object
           formData.append('image', file);
-          await axios.post(URL.baseURL + 'movies/' + res.id + '/image', formData, options);
+          await axios.post(URL.baseURL + 'movies/' + res.data.id + '/image', formData, options);
         }
       }
       setSubmitted(true)
