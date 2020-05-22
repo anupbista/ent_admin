@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import { useMediaQuery } from '@material-ui/core';
-import axios from 'axios';
+import { useMediaQuery, Snackbar } from '@material-ui/core';
+import API from '../../services/api';
 
 import { Sidebar, Topbar } from './components';
-import URL from 'env/env.dev';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { GlobalContext } from '../../contexts/GlobalContext';
+import { ErrorContext } from '../../contexts/ErrorContext';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,20 +25,26 @@ const useStyles = makeStyles(theme => ({
   content: {
     height: '100%',
     background: '#fff'
+  },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 10000,
+    color: '#fff',
   }
 }));
 
 const Main = props => {
-  const { children } = props;
-
   const classes = useStyles();
+  const { children } = props;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true
   });
-
   const [openSidebar, setOpenSidebar] = useState(false);
-  const [user, setUser] = useState({});
+  const { loading, toggleLoading } = useContext(GlobalContext);
+  const { globalError, toggleError } = useContext(ErrorContext);
+  const { loggedinuser, setLoggedInUser } = useContext(GlobalContext)
+
+  const shouldOpenSidebar = isDesktop ? true : openSidebar;
 
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
@@ -45,35 +54,38 @@ const Main = props => {
     setOpenSidebar(false);
   };
 
-  useEffect( ()=> {
-    let userid = localStorage.getItem('userid');
-    try {
-      async function fetchData(){
-        if(userid){
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let userid = localStorage.getItem('userid');
+        toggleLoading(true)
+        if (userid) {
           const options = {
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
+              'Content-Type': 'application/json',
+              'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
             }
           };
-          let res = await axios.get(URL.baseURL + 'users/'+userid, options);
-          let imagepath = res.data.imagepath ? res.data.imagepath.split('/') : null
-          if(imagepath){
-            imagepath.shift();
-            imagepath = imagepath.join('/')
-            res.data.imagepath = res.data.imagepath ? URL.appURL + imagepath : null
-          }
-          setUser(res.data)
+          let res = await API.get('/users/' + userid, options);
+          // let imagepath = res.data.imagepath ? res.data.imagepath.split('/') : null
+          // if (imagepath) {
+          //   imagepath.shift();
+          //   imagepath = imagepath.join('/')
+          //   res.data.imagepath = res.data.imagepath ? URL.appURL + imagepath : null
+          // }
+          setLoggedInUser(res.data)
         }
+        toggleLoading(false)
+      } catch (error) {
+        toggleLoading(false)
       }
-      fetchData();
-    } catch (error) {
-      console.log(error)
     }
+    fetchData();
   }, [])
 
-
-  const shouldOpenSidebar = isDesktop ? true : openSidebar;
+  const handleGlobalSnackbarClose = () => {
+    toggleError(false)
+  }
 
   return (
     <div
@@ -82,18 +94,22 @@ const Main = props => {
         [classes.shiftContent]: isDesktop
       })}
     >
+      <Snackbar open={globalError} autoHideDuration={3000} message={'Unauthorized'} onClose={handleGlobalSnackbarClose}></Snackbar>
+      <Backdrop open={loading} className={classes.backdrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Topbar onSidebarOpen={handleSidebarOpen} />
       <Sidebar
         onClose={handleSidebarClose}
         open={shouldOpenSidebar}
-        user={user}
+        user={loggedinuser}
         variant={isDesktop ? 'persistent' : 'temporary'}
       />
       <main className={classes.content}>
         {children}
       </main>
     </div>
-  );
+  )
 };
 
 Main.propTypes = {

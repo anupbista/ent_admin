@@ -3,30 +3,38 @@ import { Route, Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const RouteWithLayout = props => {
-  const { layout: Layout, component: Component, authGuard,...rest } = props;
+  const { layout: Layout, component: Component, authGuard, unAuthGuard, ...rest } = props;
 
   return (
     <Route
       {...rest}
       render={matchProps => {
+        const isAuthenticated = (localStorage.getItem('access_token') && localStorage.getItem('access_token') !== undefined && localStorage.getItem('access_token') !== 'null') && ((localStorage.getItem('userid') && localStorage.getItem('userid') !== undefined && localStorage.getItem('userid') !== 'null'));
         if(authGuard){
-          if(localStorage.getItem('access_token')){
+          if(isAuthenticated){
             return (
               <Layout>
                 <Component {...matchProps} />
               </Layout>
             )
           }else{
+            localStorage.clear();
             return(
               <Redirect to="/login" />
             )
           }
         }else{
-          return (
-            <Layout>
-              <Component {...matchProps} />
-            </Layout>
-          )
+          if(unAuthGuard && isAuthenticated){
+            return(
+              <Redirect to="/dashboard" />
+            )
+          }else{
+            return (
+              <Layout>
+                <Component {...matchProps} />
+              </Layout>
+            )
+          }
         }
       }}
     />

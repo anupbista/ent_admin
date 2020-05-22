@@ -10,7 +10,7 @@ export default {
     contrastText: white,
     dark: colors.blue[900],
     main: colors.blue[700],
-    light: colors.blue[100]
+    light: colors.blue[50]
   },
   secondary: {
     contrastText: white,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
@@ -6,11 +6,12 @@ import { makeStyles } from '@material-ui/styles';
 import { AppBar, Toolbar, Hidden, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import axios from 'axios';
-import URL from 'env/env.dev';
-import Paper from '@material-ui/core/Paper';
+import API from '../../../../services/api';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
+import history from '../../../../services/history';
+import { GlobalContext } from '../../../../contexts/GlobalContext';
+import { ErrorContext } from '../../../../contexts/ErrorContext';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,34 +23,40 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Topbar = props => {
-  const { className, onSidebarOpen, ...rest } = props;
-
   const classes = useStyles();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const { className, onSidebarOpen, ...rest } = props;
+  const { toggleLoading } = useContext(GlobalContext);
+  const { toggleError } = useContext(ErrorContext);
 
   const onLogout = async (props) => {
     let userid = localStorage.getItem('userid')
     handleClose();
     try {
       if (userid) {
+        toggleLoading(true)
         const options = {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
           }
         };
-        // await axios.get(URL.baseURL + 'auth/logout/'+userid, options);
-        // localStorage.clear()
-        // history.push('/login');
+        await API.get('/auth/logout/' + userid, options);
+        toggleLoading(false)
+        localStorage.clear()
+        history.push('/login');
       } else {
-        // localStorage.clear()
-        // history.push('/login');
+        localStorage.clear()
+        history.push('/login');
       }
     } catch (error) {
-      console.log(error)
+      if (error.status === 401) {
+        toggleError(true);
+      }
+      localStorage.clear()
+      history.push('/login');
     }
   }
-
-  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -73,21 +80,20 @@ const Topbar = props => {
         </RouterLink>
         <div className={classes.flexGrow} />
         <IconButton
-            color="inherit"
-            onClick={handleClick}
-          >
-            <AccountCircleIcon />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            {/* <MenuItem onClick={handleClose}>Profile</MenuItem> */}
-            <MenuItem onClick={onLogout}>Logout</MenuItem>
-          </Menu>
+          color="inherit"
+          onClick={handleClick}
+        >
+          <AccountCircleIcon />
+        </IconButton>
+        <Menu
+          id="simple-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={onLogout}>Logout</MenuItem>
+        </Menu>
         <Hidden smUp>
           <IconButton
             color="inherit"

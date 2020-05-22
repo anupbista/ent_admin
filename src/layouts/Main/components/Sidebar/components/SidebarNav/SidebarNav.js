@@ -34,6 +34,7 @@ const useStyles = makeStyles(theme => ({
   },
   active: {
     color: theme.palette.primary.main,
+    background: theme.palette.primary.light,
     fontWeight: theme.typography.fontWeightMedium,
     '& $icon': {
       color: theme.palette.primary.main

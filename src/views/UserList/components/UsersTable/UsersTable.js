@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -18,11 +18,10 @@ import EditIcon from '@material-ui/icons/Edit';
 import FormDialog from '../FormDialog';
 import UsersToolbar from '../UsersToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
-import axios from 'axios';
-import URL from 'env/env.dev';
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
+import API from '../../../../services/api';
+import { GlobalContext } from '../../../../contexts/GlobalContext';
+import { ErrorContext } from '../../../../contexts/ErrorContext';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -71,10 +70,6 @@ const useStyles = makeStyles(theme => ({
     top: 20,
     width: 1,
   },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 10000,
-    color: '#fff',
-  },
   emptyRow:{
     textAlign: 'center'
   }
@@ -83,18 +78,28 @@ const useStyles = makeStyles(theme => ({
 const UsersTable = props => {
   const { headCells } = props;
   const [users, setUsers] = useState(props.users);
-
-  useEffect(() => {
-    setUsers(props.users)
-  }, [props.users]);
-
   const classes = useStyles();
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModal] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isNew, setIsNew] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [mUsers, setmUsers] = useState(users);
+  const { toggleLoading } = useContext(GlobalContext);
+  const { toggleError } = useContext(ErrorContext);
+
+  const [error, setError] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    setUsers(props.users)
+  }, [props.users]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -147,13 +152,6 @@ const UsersTable = props => {
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModal] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isNew, setIsNew] = useState(false);
-
   const handleEditClickOpen = (row) => {
     if (row) setIsNew(false)
     else setIsNew(true)
@@ -171,32 +169,31 @@ const UsersTable = props => {
     setDeleteModal(true)
   }
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-
   const handleUserDelete = async () => {
     try {
+      toggleLoading(true)
       setDeleteModal(false);
-      setLoading(true);
       const options = {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      await axios.delete(URL.baseURL + 'users/' + selected.join(','), options);
+      await API.delete('/users/' + selected.join(','), options);
       setSubmitted(true);
       setSelected([])
-      setLoading(false);
+      toggleLoading(false)
       setError(false);
       props.onClose(true);
     } catch (error) {
-      setLoading(false);
       setSubmitted(false);
-      setError(true);
+      toggleLoading(false)
       setDeleteModal(false)
-      console.log(error)
+      if(error.status === 401){
+        toggleError(true);
+      }else{
+        setError(error.data ? error.data.message : 'Error occured');
+      }
     }
   }
 
@@ -207,9 +204,6 @@ const UsersTable = props => {
   const handleSnackbarClose = () => {
     setSubmitted(false)
   }
-
-  const [searchInput, setSearchInput] = useState('');
-  const [mUsers, setmUsers] = useState(users);
 
   const onSearchChangeHandler = (inputValue) => {
     setSearchInput(inputValue)
@@ -227,9 +221,6 @@ const UsersTable = props => {
   return (
     <div className={classes.root}>
       <Snackbar open={submitted && !error} autoHideDuration={3000} message="User deleted" onClose={handleSnackbarClose}></Snackbar>
-      <Backdrop open={loading} className={classes.backdrop}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleUserDelete} onClose={onClose} />
       <FormDialog modalOpen={modalOpen} user={user} onClose={handleDialogClose} isNew={isNew} />
       <UsersToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
@@ -299,18 +290,13 @@ const UsersTable = props => {
               );
             })
             }
-              {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </TableContainer>
         {
           mUsers.length > 0 && (
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[10, 20, 30]}
               component="div"
               count={mUsers.length}
               rowsPerPage={rowsPerPage}

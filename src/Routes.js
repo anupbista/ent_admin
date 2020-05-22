@@ -9,8 +9,8 @@ import {
   UserList as UserListView,
   MovieList as MovieListView,
   BookList as BookListView,
+  GenreList as GenreListView,
   Account as AccountView,
-  Settings as SettingsView,
   SignIn as SignInView,
   NotFound as NotFoundView
 } from './views';
@@ -33,36 +33,43 @@ const Routes = () => {
       <RouteWithLayout
         component={UserListView}
         exact
+        authGuard={true}
         layout={MainLayout}
         path="/users"
       />
        <RouteWithLayout
         component={MovieListView}
         exact
+        authGuard={true}
         layout={MainLayout}
         path="/movies"
       />
        <RouteWithLayout
+        component={GenreListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/genre"
+      />
+       <RouteWithLayout
         component={BookListView}
         exact
+        authGuard={true}
         layout={MainLayout}
         path="/books"
       />
       <RouteWithLayout
         component={AccountView}
         exact
+        authGuard={true}
         layout={MainLayout}
         path="/account"
       />
-      <RouteWithLayout
-        component={SettingsView}
-        exact
-        layout={MainLayout}
-        path="/settings"
-      />
-      <RouteWithLayout
+       <RouteWithLayout
         component={SignInView}
         exact
+        authGuard={false}
+        unAuthGuard={true}
         layout={MinimalLayout}
         path="/login"
       />

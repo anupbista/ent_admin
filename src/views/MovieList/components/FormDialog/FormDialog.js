@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -7,17 +7,16 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import validate from 'validate.js';
 import { makeStyles } from '@material-ui/styles';
-import axios from 'axios';
-import URL from 'env/env.dev';
-import Backdrop from '@material-ui/core/Backdrop'
-import CircularProgress from '@material-ui/core/CircularProgress';
+import API from '../../../../services/api';
 import Snackbar from '@material-ui/core/Snackbar';
-import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
+// import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import Avatar from '@material-ui/core/Avatar';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import { GlobalContext } from '../../../../contexts/GlobalContext';
+import { ErrorContext } from '../../../../contexts/ErrorContext';
 
 const schema = {
   name: {
@@ -50,6 +49,9 @@ const schema = {
   genre: {
     presence: { allowEmpty: false, message: 'is required' }
   },
+  imagepath:{
+    presence: { allowEmpty: true }
+  },
 };
 
 const useStyles = makeStyles(theme => ({
@@ -58,10 +60,6 @@ const useStyles = makeStyles(theme => ({
   },
   textField: {
     marginBottom: theme.spacing(3)
-  },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 10000,
-    color: '#fff',
   },
   uploadField: {
     display: 'none'
@@ -94,11 +92,14 @@ const useStyles = makeStyles(theme => ({
 
 const FormDialog = (props) => {
   const classes = useStyles();
-  const [loading, setLoading] = useState(false);
+  const { toggleLoading } = useContext(GlobalContext);
+  const { toggleError } = useContext(ErrorContext);
   const [error, setError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [open, setOpen] = useState(props.modalOpen);
   let isNew = props.isNew
+  // const [file, setFile] = useState(null);
+  const [fileBase64, setFileBase64] = useState(null);
 
   const [formState, setFormState] = useState({
     isValid: false,
@@ -113,13 +114,13 @@ const FormDialog = (props) => {
     let mmovie = {country: '', genre: ''}
     if(props.movie && props.movie.id){
       mmovie = {}
-      let imagepath = props.movie.imagepath ? props.movie.imagepath.split('/') : null
-      if (imagepath) {
-        imagepath.shift();
-        imagepath = imagepath.join('/')
-        imagepath = imagepath ? URL.appURL + imagepath : null
-      }
-      mmovie = { ...props.movie, imagepath: imagepath, genre: props.movie.genre[0].id }
+      // let imagepath = props.movie.imagepath ? props.movie.imagepath.split('/') : null
+      // if (imagepath) {
+      //   imagepath.shift();
+      //   imagepath = imagepath.join('/')
+      //   imagepath = imagepath ? URL.appURL + imagepath : null
+      // }
+      mmovie = { ...props.movie, genre: props.movie.genre[0].id }
     }
     setFormState(formState => ({
       ...formState,
@@ -198,40 +199,42 @@ const FormDialog = (props) => {
       downloadtext: formState.values.downloadtext,
       watchlink: formState.values.watchlink,
       watchtext: formState.values.watchtext,
-      rating: formState.values.rating,
+      rating: Number(formState.values.rating) ? Number(formState.values.rating) : 0,
       country: formState.values.country,
       genre: [
        {
         id: formState.values.genre
        }
       ],
-      imagepath: null
+      imagepath: formState.values.imagepath ? formState.values.imagepath: null
     }
     try {
-      setLoading(true);
+      toggleLoading(true);
       if (data.id) {
-        delete data.imagepath;
-        await axios.patch(URL.baseURL + 'movies/' + data.id, data, options);
+        await API.patch('/' + 'movies/' + data.id, data, options);
       } else {
         delete data.id;
-        let res = await axios.post(URL.baseURL + 'movies', data, options);
+        await API.post('/' + 'movies', data, options);
         // upload iamge
-        if (file) {
-          let formData = new FormData();    //formdata object
-          formData.append('image', file);
-          await axios.post(URL.baseURL + 'movies/' + res.data.id + '/image', formData, options);
-        }
+        // if (file) {
+        //   let formData = new FormData();    //formdata object
+        //   formData.append('image', file);
+        //   await API.post('/' + 'movies/' + res.data.id + '/image', formData, options);
+        // }
       }
       setSubmitted(true)
-      setLoading(false);
+      toggleLoading(false);
       setError(false);
       props.onClose(true);
       setFileBase64(null)
     } catch (error) {
-      setSubmitted(false)
-      setLoading(false);
-      setError(true);
-      console.log(error)
+      setSubmitted(false);
+      toggleLoading(false)
+      if(error.status === 401){
+        toggleError(true);
+      }else{
+        setError(error.data ? error.data.message : 'Error occured');
+      }
     }
   }
 
@@ -239,53 +242,51 @@ const FormDialog = (props) => {
     setSubmitted(false)
   }
 
-  const [file, setFile] = useState(null);
-  const [fileBase64, setFileBase64] = useState(null);
-  const handleUploadClick = async (event) => {
-    const upfile = event.target.files[0];
-    var reader = new FileReader();
-    reader.readAsDataURL(upfile);
+  // const handleUploadClick = async (event) => {
+  //   const upfile = event.target.files[0];
+  //   var reader = new FileReader();
+  //   reader.readAsDataURL(upfile);
 
-    reader.onload = function (e) {
-      setFileBase64(reader.result)
-    };
-    setFile(upfile);
-    event.preventDefault();
-    if (formState.values.id) {
-      try {
-        const options = {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
-          }
-        };
-        let formData = new FormData();    //formdata object
-        formData.append('image', upfile);
-        setSubmitted(true)
-        setLoading(true);
-        await axios.post(URL.baseURL + 'movies/' + formState.values.id + '/image', formData, options);
-        setLoading(false);
-        setError(false);
-      } catch (error) {
-        setFile(null);
-        setSubmitted(false)
-        setLoading(false);
-        setError(true);
-        console.log(error)
-      }
-    }
-  };
+  //   reader.onload = function (e) {
+  //     setFileBase64(reader.result)
+  //   };
+  //   setFile(upfile);
+  //   event.preventDefault();
+  //   if (formState.values.id) {
+  //     try {
+  //       const options = {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
+  //         }
+  //       };
+  //       let formData = new FormData();    //formdata object
+  //       formData.append('image', upfile);
+  //       setSubmitted(true)
+  //       toggleLoading(true);
+  //       await API.post('/' + 'movies/' + formState.values.id + '/image', formData, options);
+  //       toggleLoading(false);
+  //       setError(false);
+  //     } catch (error) {
+  //       setFile(null);
+  //       setSubmitted(false)
+  //       toggleLoading(false);
+  //       setError(true);
+  //       console.log(error)
+  //     }
+  //   }
+  // };
 
   const [countries, setCountries] = useState([]);
 
   const getCountries = async () => {
     try {
-      setLoading(true);
-      let res = await axios.get('https://restcountries.eu/rest/v1');
-      setLoading(false);
+      toggleLoading(true);
+      let res = await API.get('https://restcountries.eu/rest/v1');
+      toggleLoading(false);
       setCountries(res.data)
     } catch (error) {
-      setLoading(false);
+      toggleLoading(false);
     }
   }
 
@@ -293,28 +294,23 @@ const FormDialog = (props) => {
 
   const getGenres = async () => {
     try {
-      setLoading(true);
+      toggleLoading(true);
       const options = {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      let res = await axios.get(URL.baseURL + 'genre', options);
-      setLoading(false);
+      let res = await API.get('/' + 'genre', options);
+      toggleLoading(false);
       setGenres(res.data)
     } catch (error) {
-      setLoading(false);
+      toggleLoading(false);
     }
   }
 
   return (
     <div>
-
-      <Backdrop open={loading} className={classes.backdrop}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-
       <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Movie added' : 'Movie updated'} onClose={handleSnackbarClose}></Snackbar>
 
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
@@ -329,7 +325,7 @@ const FormDialog = (props) => {
                 className={classes.avatar}
                 src={fileBase64 ? fileBase64 : formState.values.imagepath ? formState.values.imagepath : "/images/movie.svg"}
               />
-              <input
+              {/* <input
                 accept="image/*"
                 className={classes.uploadField}
                 type="file"
@@ -340,7 +336,7 @@ const FormDialog = (props) => {
                 <Button component="span" color="primary">
                   <AddPhotoAlternateOutlined /> Upload image
                 </Button>
-              </label>
+              </label> */}
             </div>
 
             <div className={classes.multiInput2}>
@@ -387,6 +383,20 @@ const FormDialog = (props) => {
                 onChange={handleChange}
                 type="text"
                 value={formState.values.description || ''}
+                variant="outlined"
+              />
+               <TextField
+                className={classes.textField}
+                error={hasError('imagepath')}
+                fullWidth
+                helperText={
+                  hasError('imagepath') ? formState.errors.imagepath[0] : null
+                }
+                label="Image path"
+                name="imagepath"
+                onChange={handleChange}
+                type="text"
+                value={formState.values.imagepath || ''}
                 variant="outlined"
               />
               <div className={classes.multiInput2}>

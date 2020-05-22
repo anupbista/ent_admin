@@ -6,10 +6,10 @@ import { Divider, Drawer } from '@material-ui/core';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import PeopleIcon from '@material-ui/icons/People';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
-import SettingsIcon from '@material-ui/icons/Settings';
 import { Profile, SidebarNav } from './components';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import TheatersIcon from '@material-ui/icons/Theaters';
+import ClassIcon from '@material-ui/icons/Class';
 
 const useStyles = makeStyles(theme => ({
   drawer: {
@@ -56,9 +56,19 @@ const Sidebar = props => {
       icon: <TheatersIcon />
     },
     {
+      title: 'Genre',
+      href: '/genre',
+      icon: <ClassIcon />
+    },
+    {
       title: 'Books',
       href: '/books',
       icon: <MenuBookIcon />
+    },
+    {
+      title: 'Account',
+      href: '/account',
+      icon: <AccountBoxIcon />
     }
   ];
 

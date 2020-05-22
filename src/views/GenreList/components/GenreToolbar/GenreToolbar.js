@@ -69,8 +69,8 @@ const UsersToolbar = props => {
       <InputBase
         className={classes.searchInput}
         onChange={onChangeHandler}
-        placeholder="Search Book"
-        inputProps={{ 'aria-label': 'search book' }}
+        placeholder="Search Genre"
+        inputProps={{ 'aria-label': 'search genre' }}
       />
       <IconButton onClick={onSearch} className={classes.iconButton} aria-label="search">
         <SearchIcon />
@@ -83,7 +83,7 @@ const UsersToolbar = props => {
           onClick={handleNewPressed}
           variant="contained"
         >
-          Add book
+          Add genre
         </Button>
       </div>
     </div>

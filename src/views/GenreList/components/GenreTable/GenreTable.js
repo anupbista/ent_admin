@@ -16,7 +16,7 @@ import EnhancedTableHead from '../EnhancedTableHead';
 import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 import FormDialog from '../FormDialog';
-import BooksToolbar from '../BooksToolbar';
+import GenreToolbar from '../GenreToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
 import API from '../../../../services/api';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -75,13 +75,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const BooksTable = props => {
+const GenreTable = props => {
   const { headCells } = props;
-  const [books, setBooks] = useState(props.books);
+  const [genres, setGenres] = useState(props.genres);
 
   useEffect(() => {
-    setBooks(props.books)
-  }, [props.books]);
+    setGenres(props.genres)
+  }, [props.genres]);
 
   const classes = useStyles();
   const [order, setOrder] = useState('asc');
@@ -91,10 +91,10 @@ const BooksTable = props => {
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [searchInput, setSearchInput] = useState('');
-  const [mBooks, setmBooks] = useState(books);
+  const [mGenres, setmGenres] = useState(genres);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModal] = useState(false);
-  const [book, setMovie] = useState(null);
+  const [genre, setMovie] = useState(null);
   const [isNew, setIsNew] = useState(false);
   const [error, setError] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -110,7 +110,7 @@ const BooksTable = props => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = books.map((n) => n.id);
+      const newSelecteds = genres.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
@@ -180,7 +180,7 @@ const BooksTable = props => {
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      await API.delete('/books/' + selected.join(','), options);
+      await API.delete('/genre/' + selected.join(','), options);
       setSubmitted(true);
       setSelected([])
       toggleLoading(false);
@@ -212,20 +212,20 @@ const BooksTable = props => {
   }
 
   useEffect(() => {
-    setmBooks(books)
-    setmBooks(books.filter(book => {
+    setmGenres(genres)
+    setmGenres(genres.filter(genre => {
       return (
-        book.name.toLowerCase().search(searchInput.toLowerCase()) !== -1
+        genre.name.toLowerCase().search(searchInput.toLowerCase()) !== -1
       );
     }))
-  }, [books,searchInput])
+  }, [genres,searchInput])
 
   return (
     <div className={classes.root}>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message="Book deleted" onClose={handleSnackbarClose}></Snackbar>
+      <Snackbar open={submitted && !error} autoHideDuration={3000} message="Genre deleted" onClose={handleSnackbarClose}></Snackbar>
       <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleMovieDelete} onClose={onClose} />
-      <FormDialog modalOpen={modalOpen} book={book} onClose={handleDialogClose} isNew={isNew} />
-      <BooksToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
+      <FormDialog modalOpen={modalOpen} genre={genre} onClose={handleDialogClose} isNew={isNew} />
+      <GenreToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
       <Paper className={classes.paper}>
         <EnhancedTableToolbar numSelected={selected.length} openDeleteModal={openDeleteModal} />
         <TableContainer>
@@ -243,20 +243,20 @@ const BooksTable = props => {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={mBooks.length}
+              rowCount={mGenres.length}
             />
             <TableBody>
               {
-                mBooks.length < 1 && (
+                mGenres.length < 1 && (
                   <TableRow>
                     <TableCell colSpan={6} className={classes.emptyRow}>
-                      No book found
+                      No genre found
                     </TableCell>
                   </TableRow>
                 )
                 }
                 {
-              stableSort(mBooks, getComparator(order, orderBy))
+              stableSort(mGenres, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.id);
@@ -280,10 +280,6 @@ const BooksTable = props => {
                 <TableCell component="th" id={labelId} scope="row" padding="none">
                   {row.name}
                 </TableCell>
-                <TableCell align="left">{row.description}</TableCell>
-                <TableCell align="left">{row.releasedate}</TableCell>
-                <TableCell align="left">{row.author}</TableCell>
-                <TableCell align="left">{row.publisher}</TableCell>
                 <TableCell align="left">
                   <IconButton aria-label="edit" onClick={() => handleEditClickOpen(row)}>
                     <EditIcon />
@@ -297,11 +293,11 @@ const BooksTable = props => {
           </Table>
         </TableContainer>
         {
-          mBooks.length > 0 && (
+          mGenres.length > 0 && (
             <TablePagination
               rowsPerPageOptions={[10, 20, 30]}
               component="div"
-              count={mBooks.length}
+              count={mGenres.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onChangePage={handleChangePage}
@@ -318,9 +314,9 @@ const BooksTable = props => {
   );
 };
 
-BooksTable.propTypes = {
+GenreTable.propTypes = {
   className: PropTypes.string,
-  books: PropTypes.array.isRequired
+  genres: PropTypes.array.isRequired
 };
 
-export default BooksTable;
+export default GenreTable;

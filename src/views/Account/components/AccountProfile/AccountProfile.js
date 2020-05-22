@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import moment from 'moment';
@@ -13,6 +13,7 @@ import {
   Button,
   LinearProgress
 } from '@material-ui/core';
+import { GlobalContext } from '../../../../contexts/GlobalContext';
 
 const useStyles = makeStyles(theme => ({
   root: {},
@@ -39,13 +40,7 @@ const AccountProfile = props => {
 
   const classes = useStyles();
 
-  const user = {
-    name: 'Shen Zhi',
-    city: 'Los Angeles',
-    country: 'USA',
-    timezone: 'GTM-7',
-    avatar: '/images/avatars/avatar_11.png'
-  };
+  const { loggedinuser, setLoggedInUser } = useContext(GlobalContext)
 
   return (
     <Card
@@ -54,7 +49,7 @@ const AccountProfile = props => {
     >
       <CardContent>
         <div className={classes.details}>
-          <div>
+          {/* <div>
             <Typography
               gutterBottom
               variant="h2"
@@ -66,19 +61,19 @@ const AccountProfile = props => {
               color="textSecondary"
               variant="body1"
             >
-              {user.city}, {user.country}
+              {loggedinuser.city}, {loggedinuser.country}
             </Typography>
             <Typography
               className={classes.dateText}
               color="textSecondary"
               variant="body1"
             >
-              {moment().format('hh:mm A')} ({user.timezone})
+              {moment().format('hh:mm A')} ({loggedinuser.timezone})
             </Typography>
-          </div>
+          </div> */}
           <Avatar
             className={classes.avatar}
-            src={user.avatar}
+            src={loggedinuser.imagepath}
           />
         </div>
         <div className={classes.progress}>

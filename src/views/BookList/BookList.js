@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 
 import { BooksTable } from './components';
-import axios from 'axios';
-import URL from 'env/env.dev';
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import API from '../../services/api';
+import { GlobalContext } from '../../contexts/GlobalContext';
+import { ErrorContext } from '../../contexts/ErrorContext';
+import { Snackbar } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -13,18 +13,15 @@ const useStyles = makeStyles(theme => ({
   },
   content: {
     marginTop: theme.spacing(2)
-  },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 10000,
-    color: '#fff',
-  },
+  }
 }));
 
 const BookList = () => {
   const classes = useStyles();
 
   const [books, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { toggleLoading } = useContext(GlobalContext);
+  const { toggleError } = useContext(ErrorContext);
   const [error, setError] = useState(false);
 
   const headCells = [
@@ -39,22 +36,24 @@ const BookList = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      toggleLoading(true);
       const options = {
         headers: {
             'Content-Type': 'application/json',
             'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
         }
       };
-      let res = await axios.get(URL.baseURL + 'books', options);
+      let res = await API.get('/books', options);
       setMovies(res.data)
-      setLoading(false);
+      toggleLoading(false);
       setError(false);
     } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log(error)
-    }
+      toggleLoading(false);
+      if(error.status === 401){
+        toggleError(true);
+      }
+      setError(error.data ? error.data.message : 'Error occured');
+     }
   }
 
   const closeFormDialog = (loadData) => {
@@ -65,12 +64,14 @@ const BookList = () => {
     fetchData();
   }, [])
 
+  const handleSnackbarClose = () => {
+    setError(null)
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.content}>
-      <Backdrop open={loading} className={classes.backdrop}>
-        <CircularProgress color="inherit" />
-      </Backdrop> 
+      <Snackbar open={error ? true : false} autoHideDuration={3000} message={error ? error : 'Error Occured'} onClose={handleSnackbarClose}></Snackbar>
         <BooksTable onClose={closeFormDialog} headCells={headCells} books={books} />
       </div>
     </div>

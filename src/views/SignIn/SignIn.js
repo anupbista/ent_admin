@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import validate from 'validate.js';
@@ -8,16 +8,13 @@ import {
   Button,
   TextField,
   Box,
-  CircularProgress,
   Typography,
   Paper,
-  IconButton,
   Snackbar,
-  Backdrop
 } from '@material-ui/core';
-import axios from 'axios';
-import URL from 'env/env.dev';
-import CloseIcon from '@material-ui/icons/Close';
+import API from '../../services/api';
+import history from '../../services/history';
+import { GlobalContext } from '../../contexts/GlobalContext';
 
 const schema = {
   username: {
@@ -46,38 +43,6 @@ const useStyles = makeStyles(theme => ({
     width: '60%',
     marginBottom: 50
   },
-  quoteContainer: {
-    [theme.breakpoints.down('md')]: {
-      display: 'none'
-    }
-  },
-  quote: {
-    backgroundColor: theme.palette.neutral,
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundImage: 'url(/images/auth.jpg)',
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center'
-  },
-  quoteInner: {
-    textAlign: 'center',
-    flexBasis: '600px'
-  },
-  quoteText: {
-    color: theme.palette.white,
-    fontWeight: 300
-  },
-  name: {
-    marginTop: theme.spacing(3),
-    color: theme.palette.white
-  },
-  bio: {
-    color: theme.palette.white
-  },
-  contentContainer: {},
   content: {
     height: '100%',
     display: 'flex',
@@ -119,34 +84,20 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3)
   },
-  socialButtons: {
-    marginTop: theme.spacing(3)
-  },
-  socialIcon: {
-    marginRight: theme.spacing(1)
-  },
-  sugestion: {
-    marginTop: theme.spacing(2)
-  },
   textField: {
     marginTop: theme.spacing(4)
   },
   signInButton: {
     margin: theme.spacing(4, 0)
   },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 10000,
-    color: '#fff',
-  },
 }));
 
 const SignIn = props => {
-  const { history } = props;
 
   const classes = useStyles();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
+  const { toggleLoading } = useContext(GlobalContext)
+  const [ submitted, setSubmitted ] = useState(false)
+  const [ error, setError ] = useState(false)
   const [formState, setFormState] = useState({
     isValid: false,
     values: {},
@@ -196,21 +147,24 @@ const SignIn = props => {
       password: formState.values.password
     }
     try {
-      setLoading(true);
-      let res = await axios.post(URL.baseURL + 'auth/login', data, options);
-      localStorage.setItem('access_token', res.data.access_token)
-      localStorage.setItem('userid', res.data.userid)
-      setLoading(false);
-      setError(false);
+      setSubmitted(true)
+      toggleLoading(true)
+      let res = await API.post('/auth/login', data, options);
+      localStorage.setItem('access_token', res.data.access_token);
+      localStorage.setItem('userid', res.data.userid);
+      toggleLoading(false)
+      setError(false)
       history.push('/');
     } catch (error) {
-      setLoading(false);
-      setError(true);
+      setSubmitted(false)
+      setError(true)
+      toggleLoading(false)
       console.log(error)
     }
   };
 
   const handleClose = () => {
+    setSubmitted(false)
     setError(false)
   }
 
@@ -219,20 +173,7 @@ const SignIn = props => {
 
   return (
     <div className={classes.root}>
-      {loading && <Backdrop className={classes.backdrop} open={loading}>
-        <CircularProgress color="inherit" />
-      </Backdrop> }
-
-      <Snackbar open={error} autoHideDuration={6000} message="Username/Password is incorrect" action={
-          <React.Fragment>
-            <Button color="secondary" size="small" onClick={handleClose}>
-              CLOSE
-            </Button>
-            <IconButton size="small" aria-label="close" color="inherit" onClick={handleClose}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </React.Fragment>
-        }></Snackbar>
+      <Snackbar open={!submitted && error} autoHideDuration={3000} message={'Username/Password is incorrect'} onClose={handleClose}></Snackbar>
 
       <Grid
         className={classes.grid}
@@ -254,7 +195,7 @@ const SignIn = props => {
                 <Box justifyContent="center" display="flex">
                  <img className={classes.logoImge}
                     alt="Logo"
-                    src="/images/logos/ent_logo.png"
+                    src="/images/logos/logo-blue.png"
                   />
                  </Box>
                   <Typography

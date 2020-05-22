@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Grid, Typography } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,9 +40,6 @@ const Dashboard = () => {
               className={classes.image}
               src="/images/welcome.png"
             />
-            <Typography variant="h1">
-              Welcome
-            </Typography>
           </div>
         </Grid>
       </Grid>

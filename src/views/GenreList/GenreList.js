@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 
-import { MoviesTable } from './components';
+import { GenreTable } from './components';
 import API from '../../services/api';
 import { GlobalContext } from '../../contexts/GlobalContext';
 import { ErrorContext } from '../../contexts/ErrorContext';
@@ -13,26 +13,19 @@ const useStyles = makeStyles(theme => ({
   },
   content: {
     marginTop: theme.spacing(2)
-  },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 10000,
-    color: '#fff',
-  },
+  }
 }));
 
-const MovieList = () => {
+const GenreList = () => {
   const classes = useStyles();
 
-  const [movies, setMovies] = useState([]);
+  const [genres, setMovies] = useState([]);
   const { toggleLoading } = useContext(GlobalContext);
   const { toggleError } = useContext(ErrorContext);
   const [error, setError] = useState(false);
 
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: true },
-    { id: 'description', numeric: false, disablePadding: false, label: 'Description', sort: true },
-    { id: 'releasedate', numeric: false, disablePadding: false, label: 'Releasedate', sort: true },
-    { id: 'rating', numeric: false, disablePadding: false, label: 'Rating', sort: true },
     { id: 'Actions', numeric: false, disablePadding: false, label: 'Actions', sort: false },
   ];
 
@@ -46,7 +39,7 @@ const MovieList = () => {
             'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
         }
       };
-      let res = await API.get('/' + 'movies', options);
+      let res = await API.get('/genre', options);
       setMovies(res.data)
       toggleLoading(false);
       setError(false);
@@ -57,7 +50,7 @@ const MovieList = () => {
       }
       setError(error.data ? error.data.message : 'Error occured');
      }
-    }
+  }
 
   const closeFormDialog = (loadData) => {
     if(loadData) fetchData()
@@ -75,11 +68,10 @@ const MovieList = () => {
     <div className={classes.root}>
       <div className={classes.content}>
       <Snackbar open={error ? true : false} autoHideDuration={3000} message={error ? error : 'Error Occured'} onClose={handleSnackbarClose}></Snackbar>
-
-        <MoviesTable onClose={closeFormDialog} headCells={headCells} movies={movies} />
+        <GenreTable onClose={closeFormDialog} headCells={headCells} genres={genres} />
       </div>
     </div>
   );
-}
+};
 
-export default MovieList;
+export default GenreList;
