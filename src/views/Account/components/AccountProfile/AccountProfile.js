@@ -1,34 +1,29 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import moment from 'moment';
 import { makeStyles } from '@material-ui/styles';
 import {
   Card,
-  CardActions,
   CardContent,
   Avatar,
-  Typography,
-  Divider,
-  Button,
-  LinearProgress
+  Chip
 } from '@material-ui/core';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
 
 const useStyles = makeStyles(theme => ({
   root: {},
   details: {
-    display: 'flex'
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
   },
   avatar: {
-    marginLeft: 'auto',
     height: 110,
     width: 100,
     flexShrink: 0,
-    flexGrow: 0
-  },
-  progress: {
-    marginTop: theme.spacing(2)
+    flexGrow: 0,
+    marginBottom: 20
   },
   uploadButton: {
     marginRight: theme.spacing(2)
@@ -40,7 +35,7 @@ const AccountProfile = props => {
 
   const classes = useStyles();
 
-  const { loggedinuser, setLoggedInUser } = useContext(GlobalContext)
+  const { loggedinuser } = useContext(GlobalContext)
 
   return (
     <Card
@@ -49,52 +44,13 @@ const AccountProfile = props => {
     >
       <CardContent>
         <div className={classes.details}>
-          {/* <div>
-            <Typography
-              gutterBottom
-              variant="h2"
-            >
-              John Doe
-            </Typography>
-            <Typography
-              className={classes.locationText}
-              color="textSecondary"
-              variant="body1"
-            >
-              {loggedinuser.city}, {loggedinuser.country}
-            </Typography>
-            <Typography
-              className={classes.dateText}
-              color="textSecondary"
-              variant="body1"
-            >
-              {moment().format('hh:mm A')} ({loggedinuser.timezone})
-            </Typography>
-          </div> */}
           <Avatar
             className={classes.avatar}
             src={loggedinuser.imagepath}
           />
-        </div>
-        <div className={classes.progress}>
-          <Typography variant="body1">Profile Completeness: 70%</Typography>
-          <LinearProgress
-            value={70}
-            variant="determinate"
-          />
+          <Chip label={loggedinuser.role} />
         </div>
       </CardContent>
-      <Divider />
-      <CardActions>
-        <Button
-          className={classes.uploadButton}
-          color="primary"
-          variant="text"
-        >
-          Upload picture
-        </Button>
-        <Button variant="text">Remove picture</Button>
-      </CardActions>
     </Card>
   );
 };

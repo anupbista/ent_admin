@@ -18,10 +18,9 @@ import EditIcon from '@material-ui/icons/Edit';
 import FormDialog from '../FormDialog';
 import UsersToolbar from '../UsersToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
-import Snackbar from '@material-ui/core/Snackbar';
 import API from '../../../../services/api';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -92,9 +91,9 @@ const UsersTable = props => {
   const [searchInput, setSearchInput] = useState('');
   const [mUsers, setmUsers] = useState(users);
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
-  const [error, setError] = useState(false)
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
@@ -183,26 +182,24 @@ const UsersTable = props => {
       setSubmitted(true);
       setSelected([])
       toggleLoading(false)
-      setError(false);
+      toggleSnackbar(true);
+      toggleSnackbarMsg('User Deleted');
       props.onClose(true);
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       setDeleteModal(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unathorized');
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
     }
   }
 
   const onClose = () => {
     setDeleteModal(false)
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   const onSearchChangeHandler = (inputValue) => {
@@ -220,7 +217,6 @@ const UsersTable = props => {
 
   return (
     <div className={classes.root}>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message="User deleted" onClose={handleSnackbarClose}></Snackbar>
       <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleUserDelete} onClose={onClose} />
       <FormDialog modalOpen={modalOpen} user={user} onClose={handleDialogClose} isNew={isNew} />
       <UsersToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />

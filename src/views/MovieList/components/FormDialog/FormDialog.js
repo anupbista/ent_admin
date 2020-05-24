@@ -8,7 +8,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import validate from 'validate.js';
 import { makeStyles } from '@material-ui/styles';
 import API from '../../../../services/api';
-import Snackbar from '@material-ui/core/Snackbar';
 // import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import Avatar from '@material-ui/core/Avatar';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -16,7 +15,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
+import { DatePicker } from "@material-ui/pickers";
+import * as moment from 'moment';
 
 const schema = {
   name: {
@@ -93,8 +94,8 @@ const useStyles = makeStyles(theme => ({
 const FormDialog = (props) => {
   const classes = useStyles();
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
-  const [error, setError] = useState(false);
+  const { toggleSnackbar } = useContext(SnackbarContext);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false);
   const [open, setOpen] = useState(props.modalOpen);
   let isNew = props.isNew
@@ -138,6 +139,20 @@ const FormDialog = (props) => {
     }));
   }, [formState.values]);
 
+  const handleDateChange = event => {
+    setFormState(formState => ({
+      ...formState,
+      values: {
+        ...formState.values,
+        releasedate: event
+      },
+      touched: {
+        ...formState.touched,
+        releasedate: true
+      }
+    }));
+  }
+  
   const handleChange = event => {
     event.persist();
 
@@ -194,7 +209,7 @@ const FormDialog = (props) => {
       id: formState.values.id || null,
       name: formState.values.name,
       description: formState.values.description,
-      releasedate: formState.values.releasedate,
+      releasedate: String(moment(formState.values.releasedate).year()),
       downloadlink: formState.values.downloadlink,
       downloadtext: formState.values.downloadtext,
       watchlink: formState.values.watchlink,
@@ -211,10 +226,10 @@ const FormDialog = (props) => {
     try {
       toggleLoading(true);
       if (data.id) {
-        await API.patch('/' + 'movies/' + data.id, data, options);
+        await API.patch('/movies/' + data.id, data, options);
       } else {
         delete data.id;
-        await API.post('/' + 'movies', data, options);
+        await API.post('/movies', data, options);
         // upload iamge
         // if (file) {
         //   let formData = new FormData();    //formdata object
@@ -224,22 +239,27 @@ const FormDialog = (props) => {
       }
       setSubmitted(true)
       toggleLoading(false);
-      setError(false);
+      toggleSnackbar(true);
+      toggleSnackbarMsg(isNew ? 'Movie added' : 'Movie updated')
       props.onClose(true);
+      setFormState({
+        isValid: false,
+        values: {country: '', genre: ''},
+        touched: {},
+        errors: {}
+      })
+      setOpen(false);
       setFileBase64(null)
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
     }
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   // const handleUploadClick = async (event) => {
@@ -266,12 +286,12 @@ const FormDialog = (props) => {
   //       toggleLoading(true);
   //       await API.post('/' + 'movies/' + formState.values.id + '/image', formData, options);
   //       toggleLoading(false);
-  //       setError(false);
+  //       toggleSnackbar(true);
   //     } catch (error) {
   //       setFile(null);
   //       setSubmitted(false)
   //       toggleLoading(false);
-  //       setError(true);
+  //       toggleSnackbar(true);
   //       console.log(error)
   //     }
   //   }
@@ -301,7 +321,7 @@ const FormDialog = (props) => {
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      let res = await API.get('/' + 'genre', options);
+      let res = await API.get('/genre', options);
       toggleLoading(false);
       setGenres(res.data)
     } catch (error) {
@@ -311,8 +331,6 @@ const FormDialog = (props) => {
 
   return (
     <div>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Movie added' : 'Movie updated'} onClose={handleSnackbarClose}></Snackbar>
-
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{isNew ? 'Add Movie' : 'Edit Movie'}</DialogTitle>
         <DialogContent>
@@ -354,7 +372,14 @@ const FormDialog = (props) => {
                 value={formState.values.name || ''}
                 variant="outlined"
               />
-              <TextField
+              <DatePicker
+                views={["year"]}
+                label="Released date"
+                value={moment(formState.values.releasedate) || new Date()}
+                inputVariant="outlined"
+                onChange={handleDateChange}
+              />
+              {/* <TextField
                 className={classes.textField}
                 error={hasError('releasedate')}
                 fullWidth
@@ -367,7 +392,7 @@ const FormDialog = (props) => {
                 type="text"
                 value={formState.values.releasedate || ''}
                 variant="outlined"
-              />
+              /> */}
             </div>
             <TextField
                 className={classes.textField}

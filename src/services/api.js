@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useContext } from 'react';
 import history from './history';
 
 const API = axios.create({
@@ -17,7 +16,7 @@ API.interceptors.response.use((response) => {
         return Promise.reject('Network Error')
     } else {
         const status = error.response.status;
-        if(status == 401){
+        if(status === 401){
             localStorage.clear();
             history.push('login')
             return Promise.reject(error.response)

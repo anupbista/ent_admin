@@ -12,7 +12,9 @@ import validators from './common/validators';
 import Routes from './Routes';
 import history from './services/history';
 import GlobalContextProvider from './contexts/GlobalContext';
-import ErrorContextProvider from './contexts/ErrorContext';
+import SnackbarContextProvider from './contexts/SnackbarContext';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 
 Chart.helpers.extend(Chart.elements.Rectangle.prototype, {
   draw: chartjs.draw
@@ -28,11 +30,13 @@ export default class App extends Component {
     return (
       <ThemeProvider theme={theme}>
         <GlobalContextProvider>
-          <ErrorContextProvider>
+          <SnackbarContextProvider>
+            <MuiPickersUtilsProvider utils={MomentUtils}>
             <Router history={history}>
               <Routes />
             </Router>
-          </ErrorContextProvider>
+            </MuiPickersUtilsProvider>
+          </SnackbarContextProvider>
         </GlobalContextProvider>
       </ThemeProvider>
     );

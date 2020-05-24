@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { GlobalContext } from '../../contexts/GlobalContext';
-import { ErrorContext } from '../../contexts/ErrorContext';
+import { SnackbarContext } from '../../contexts/SnackbarContext';
 import { Snackbar } from '@material-ui/core';
 
 import { Topbar } from './components';
@@ -28,15 +28,16 @@ const Minimal = props => {
 
   const classes = useStyles();
   const { loading } = useContext(GlobalContext)
-  const { globalError, toggleError } = useContext(ErrorContext);
+  const { globalSnackbar, toggleSnackbar } = useContext(SnackbarContext);
+  const { globalSnackbarMsg } = useContext(SnackbarContext);
 
   const handleGlobalSnackbarClose = () => {
-    toggleError(false)
+    toggleSnackbar(false)
   }
   
   return (
     <div className={classes.root}>
-      <Snackbar open={globalError} autoHideDuration={3000} message={'Unauthorized'} onClose={handleGlobalSnackbarClose}></Snackbar>
+      <Snackbar open={globalSnackbar} autoHideDuration={3000} message={globalSnackbarMsg ? globalSnackbarMsg : 'Unauthorized'} onClose={handleGlobalSnackbarClose}></Snackbar>
       <Backdrop open={loading} className={classes.backdrop}>
         <CircularProgress color="inherit" />
       </Backdrop>

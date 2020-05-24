@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-import { AppBar, Toolbar, Hidden, IconButton } from '@material-ui/core';
+import { AppBar, Toolbar, IconButton } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import API from '../../../../services/api';
@@ -11,7 +10,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import history from '../../../../services/history';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
+
+const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,15 +20,35 @@ const useStyles = makeStyles(theme => ({
   },
   flexGrow: {
     flexGrow: 1
+  },
+  logo: {
+    width: '40%'
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
+    },
+  },
+  appBar: {
+    [theme.breakpoints.up('sm')]: {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: drawerWidth,
+    },
+  },
+  customWidth: {
+    '& div': {
+      width: '150px',
+    }
   }
 }));
 
 const Topbar = props => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
-  const { className, onSidebarOpen, ...rest } = props;
-  const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { className, ...rest } = props;
+  const { toggleLoading, toggleSetMobileOpen } = useContext(GlobalContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
   const onLogout = async (props) => {
     let userid = localStorage.getItem('userid')
@@ -51,7 +72,7 @@ const Topbar = props => {
       }
     } catch (error) {
       if (error.status === 401) {
-        toggleError(true);
+        toggleSnackbar(true);
       }
       localStorage.clear()
       history.push('/login');
@@ -69,13 +90,23 @@ const Topbar = props => {
   return (
     <AppBar
       {...rest}
-      className={clsx(classes.root, className)}
+      position="fixed" className={classes.appBar}
     >
       <Toolbar>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={toggleSetMobileOpen}
+          className={classes.menuButton}
+        >
+          <MenuIcon />
+        </IconButton>
+
         <RouterLink to="/">
-          <img
+          <img className={classes.logo}
             alt="Logo"
-            src="/images/logos/logo--white.svg"
+            src="/images/logos/logo-white.png"
           />
         </RouterLink>
         <div className={classes.flexGrow} />
@@ -85,7 +116,7 @@ const Topbar = props => {
         >
           <AccountCircleIcon />
         </IconButton>
-        <Menu
+        <Menu className={classes.customWidth}
           id="simple-menu"
           anchorEl={anchorEl}
           keepMounted
@@ -94,22 +125,13 @@ const Topbar = props => {
         >
           <MenuItem onClick={onLogout}>Logout</MenuItem>
         </Menu>
-        <Hidden smUp>
-          <IconButton
-            color="inherit"
-            onClick={onSidebarOpen}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Hidden>
       </Toolbar>
     </AppBar>
   );
 };
 
 Topbar.propTypes = {
-  className: PropTypes.string,
-  onSidebarOpen: PropTypes.func
+  className: PropTypes.string
 };
 
 export default Topbar;

@@ -19,12 +19,9 @@ import FormDialog from '../FormDialog';
 import MoviesToolbar from '../MoviesToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
 import API from '../../../../services/api';
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Snackbar from '@material-ui/core/Snackbar';
 import Rating from '@material-ui/lab/Rating';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -94,7 +91,7 @@ const MoviesTable = props => {
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModal] = useState(false);
   const [movie, setMovie] = useState(null);
@@ -102,7 +99,7 @@ const MoviesTable = props => {
   const [searchInput, setSearchInput] = useState('');
   const [mMovies, setmMovies] = useState(movies);
 
-  const [error, setError] = useState(false)
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false)
 
   const handleRequestSort = (event, property) => {
@@ -156,8 +153,6 @@ const MoviesTable = props => {
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, movies.length - page * rowsPerPage);
-
   const handleEditClickOpen = (row) => {
     if (row) setIsNew(false)
     else setIsNew(true)
@@ -189,26 +184,24 @@ const MoviesTable = props => {
       setSubmitted(true);
       setSelected([])
       toggleLoading(false);
-      setError(false);
+      toggleSnackbar(true);
+      toggleSnackbarMsg('Movie Deleted')
       props.onClose(true);
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       setDeleteModal(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
     }
   }
 
   const onClose = () => {
     setDeleteModal(false)
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   const onSearchChangeHandler = (inputValue) => {
@@ -226,7 +219,6 @@ const MoviesTable = props => {
 
   return (
     <div className={classes.root}>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message="Movie deleted" onClose={handleSnackbarClose}></Snackbar>
       <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleMovieDelete} onClose={onClose} />
       <FormDialog modalOpen={modalOpen} movie={movie} onClose={handleDialogClose} isNew={isNew} />
       <MoviesToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />

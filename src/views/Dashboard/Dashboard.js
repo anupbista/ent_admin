@@ -7,7 +7,6 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4)
   },
   content: {
-    paddingTop: 150,
     textAlign: 'center'
   },
   image: {

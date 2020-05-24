@@ -8,11 +8,12 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import validate from 'validate.js';
 import { makeStyles } from '@material-ui/styles';
 import API from '../../../../services/api';
-import Snackbar from '@material-ui/core/Snackbar';
 // import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import Avatar from '@material-ui/core/Avatar';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
+import { DatePicker } from "@material-ui/pickers";
+import * as moment from 'moment';
 
 const schema = {
   name: {
@@ -92,13 +93,13 @@ const useStyles = makeStyles(theme => ({
 
 const FormDialog = (props) => {
   const classes = useStyles();
-  const [error, setError] = useState(false);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false);
   const [open, setOpen] = useState(props.modalOpen);
   let isNew = props.isNew
 
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
   // const [file, setFile] = useState(null);
   const [fileBase64, setFileBase64] = useState(null);
@@ -138,6 +139,20 @@ const FormDialog = (props) => {
       errors: errors || {}
     }));
   }, [formState.values]);
+
+  const handleDateChange = event => {
+    setFormState(formState => ({
+      ...formState,
+      values: {
+        ...formState.values,
+        releasedate: event
+      },
+      touched: {
+        ...formState.touched,
+        releasedate: true
+      }
+    }));
+  }
 
   const handleChange = event => {
     event.persist();
@@ -190,7 +205,7 @@ const FormDialog = (props) => {
       id: formState.values.id || null,
       name: formState.values.name,
       description: formState.values.description,
-      releasedate: formState.values.releasedate,
+      releasedate: String(moment(formState.values.releasedate).year()),
       downloadlink: formState.values.downloadlink,
       downloadtext: formState.values.downloadtext,
       readlink: formState.values.readlink,
@@ -206,7 +221,7 @@ const FormDialog = (props) => {
         await API.patch('/books/' + data.id, data, options);
       } else {
         delete data.id;
-        await API.post('/' + 'books', data, options);
+        await API.post('/books', data, options);
         // upload iamge
         // if (file) {
         //   let formData = new FormData();    //formdata object
@@ -216,22 +231,27 @@ const FormDialog = (props) => {
       }
       setSubmitted(true)
       toggleLoading(false);
-      setError(false);
+      toggleSnackbarMsg(isNew ? 'Book added' : 'Book updated')
+      toggleSnackbar(true);
+      setFormState({
+        isValid: false,
+        values: {},
+        touched: {},
+        errors: {}
+      })
+      setOpen(false);
       props.onClose(true);
       setFileBase64(null)
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
     }
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   // const handleUploadClick = async (event) => {
@@ -258,12 +278,12 @@ const FormDialog = (props) => {
   //       toggleLoading(true);
   //       await API.post('/' + 'books/' + formState.values.id + '/image', formData, options);
   //       toggleLoading(false);
-  //       setError(false);
+  //       toggleSnackbar(true);
   //     } catch (error) {
   //       setFile(null);
   //       setSubmitted(false)
   //       toggleLoading(false);
-  //       setError(true);
+  //       toggleSnackbar(true);
   //       console.log(error)
   //     }
   //   }
@@ -271,8 +291,6 @@ const FormDialog = (props) => {
 
   return (
     <div>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Book added' : 'Book updated'} onClose={handleSnackbarClose}></Snackbar>
-
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{isNew ? 'Add book' : 'Edit book'}</DialogTitle>
         <DialogContent>
@@ -314,7 +332,7 @@ const FormDialog = (props) => {
                 value={formState.values.name || ''}
                 variant="outlined"
               />
-              <TextField
+              {/* <TextField
                 className={classes.textField}
                 error={hasError('releasedate')}
                 fullWidth
@@ -327,6 +345,13 @@ const FormDialog = (props) => {
                 type="text"
                 value={formState.values.releasedate || ''}
                 variant="outlined"
+              /> */}
+              <DatePicker
+                views={["year"]}
+                label="Released date"
+                value={moment(formState.values.releasedate) || new Date()}
+                inputVariant="outlined"
+                onChange={handleDateChange}
               />
             </div>
             <TextField

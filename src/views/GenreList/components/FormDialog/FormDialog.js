@@ -8,10 +8,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import validate from 'validate.js';
 import { makeStyles } from '@material-ui/styles';
 import API from '../../../../services/api';
-import Snackbar from '@material-ui/core/Snackbar';
 // import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
 const schema = {
   name: {
@@ -61,13 +60,13 @@ const useStyles = makeStyles(theme => ({
 
 const FormDialog = (props) => {
   const classes = useStyles();
-  const [error, setError] = useState(false);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false);
   const [open, setOpen] = useState(props.modalOpen);
   let isNew = props.isNew
 
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
   const [formState, setFormState] = useState({
     isValid: false,
@@ -153,27 +152,30 @@ const FormDialog = (props) => {
       }
       setSubmitted(true)
       toggleLoading(false);
-      setError(false);
+      toggleSnackbar(true);
+      toggleSnackbarMsg(isNew ? 'Genre added' : 'Genre updated');
+      setFormState({
+        isValid: false,
+        values: {},
+        touched: {},
+        errors: {}
+      })
+      setOpen(false);
       props.onClose(true);
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured')
       }
+      toggleSnackbar(true);
     }
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   return (
     <div>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'Genre added' : 'Genre updated'} onClose={handleSnackbarClose}></Snackbar>
-
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{isNew ? 'Add genre' : 'Edit genre'}</DialogTitle>
         <DialogContent>

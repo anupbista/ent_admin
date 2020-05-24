@@ -4,8 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { UsersTable } from './components';
 import API from '../../services/api';
 import { GlobalContext } from '../../contexts/GlobalContext';
-import { ErrorContext } from '../../contexts/ErrorContext';
-import { Snackbar } from '@material-ui/core';
+import { SnackbarContext } from '../../contexts/SnackbarContext';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,9 +18,9 @@ const useStyles = makeStyles(theme => ({
 const UserList = () => {
   const classes = useStyles();
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
   const [users, setUsers] = useState([]);
-  const [error, setError] = useState(null);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
 
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: false },
@@ -41,16 +40,18 @@ const UserList = () => {
           'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
       }
     };
-    let res = await API.get('/' + 'users', options);
+    let res = await API.get('/users', options);
     toggleLoading(false);
-    toggleError(false);
     setUsers(res.data)
    } catch (error) {
     toggleLoading(false);
     if(error.status === 401){
-      toggleError(true);
+      toggleSnackbarMsg('Unauthorized')
     }
-    setError(error.data ? error.data.message : 'Error occured');
+    else{
+      toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
+    }
+    toggleSnackbar(true);
    }
   }
 
@@ -58,9 +59,6 @@ const UserList = () => {
     if(loadData) fetchData()
   }
 
-  const handleSnackbarClose = () => {
-    setError(null)
-  }
 
   useEffect( ()=> {
     fetchData();
@@ -69,7 +67,6 @@ const UserList = () => {
   return (
     <div className={classes.root}>
       <div className={classes.content}>
-      <Snackbar open={error ? true : false} autoHideDuration={3000} message={error ? error : 'Error Occured'} onClose={handleSnackbarClose}></Snackbar>
         <UsersTable onClose={closeFormDialog} headCells={headCells} users={users} />
       </div>
     </div>

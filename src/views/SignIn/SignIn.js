@@ -10,11 +10,11 @@ import {
   Box,
   Typography,
   Paper,
-  Snackbar,
 } from '@material-ui/core';
 import API from '../../services/api';
 import history from '../../services/history';
 import { GlobalContext } from '../../contexts/GlobalContext';
+import { SnackbarContext } from '../../contexts/SnackbarContext';
 
 const schema = {
   username: {
@@ -97,7 +97,7 @@ const SignIn = props => {
   const classes = useStyles();
   const { toggleLoading } = useContext(GlobalContext)
   const [ submitted, setSubmitted ] = useState(false)
-  const [ error, setError ] = useState(false)
+  const { toggleSnackbar, toggleSnackbarMsg } = useContext(SnackbarContext);
   const [formState, setFormState] = useState({
     isValid: false,
     values: {},
@@ -153,28 +153,22 @@ const SignIn = props => {
       localStorage.setItem('access_token', res.data.access_token);
       localStorage.setItem('userid', res.data.userid);
       toggleLoading(false)
-      setError(false)
+      toggleSnackbar(true);
+      toggleSnackbarMsg('Logged in')
       history.push('/');
     } catch (error) {
       setSubmitted(false)
-      setError(true)
+      toggleSnackbar(true)
+      toggleSnackbarMsg('Username/Password is incorrect')
       toggleLoading(false)
-      console.log(error)
     }
   };
-
-  const handleClose = () => {
-    setSubmitted(false)
-    setError(false)
-  }
 
   const hasError = field =>
     formState.touched[field] && formState.errors[field] ? true : false;
 
   return (
     <div className={classes.root}>
-      <Snackbar open={!submitted && error} autoHideDuration={3000} message={'Username/Password is incorrect'} onClose={handleClose}></Snackbar>
-
       <Grid
         className={classes.grid}
         container

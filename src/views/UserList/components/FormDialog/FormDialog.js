@@ -8,7 +8,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import validate from 'validate.js';
 import { makeStyles } from '@material-ui/styles';
 import API from '../../../../services/api';
-import Snackbar from '@material-ui/core/Snackbar';
 // import AddPhotoAlternateOutlined from '@material-ui/icons/AddPhotoAlternateOutlined';
 import Avatar from '@material-ui/core/Avatar';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -16,7 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
 const schema = {
   firstname: {
@@ -80,9 +79,9 @@ const FormDialog = (props) => {
   // const [file, setFile] = useState(null);
   const [fileBase64, setFileBase64] = useState(null);
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
-  const [error, setError] = useState(false);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false);
 
   const [formState, setFormState] = useState({
@@ -184,10 +183,10 @@ const FormDialog = (props) => {
     try {
       toggleLoading(true);
       if (data.id) {
-        await API.patch('/' + 'users/' + data.id, data, options);
+        await API.patch('/users/' + data.id, data, options);
       } else {
         delete data.id;
-        await API.post('/' + 'users', data, options);
+        await API.post('/users', data, options);
         // upload iamge
         // if (file) {
         //   let formData = new FormData();    //formdata object
@@ -197,22 +196,27 @@ const FormDialog = (props) => {
       }
       setSubmitted(true)
       toggleLoading(false);
-      setError(false);
+      toggleSnackbar(true);
+      toggleSnackbarMsg(isNew ? 'User added' : 'User updated')
+      setFormState({
+        isValid: false,
+        values: {},
+        touched: {},
+        errors: {}
+      })
+      setOpen(false);
       props.onClose(true);
       setFileBase64(null)
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unathorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
     }
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   // const handleUploadClick = async (event) => {
@@ -239,15 +243,15 @@ const FormDialog = (props) => {
   //       toggleLoading(true);
   //       await API.post('/' + 'users/' + formState.values.id + '/image', formData, options);
   //       toggleLoading(false);
-  //       setError(false);
+  //       toggleSnackbar(true);
   //     } catch (error) {
   //       setFile(null);
   //       setSubmitted(false)
   //       toggleLoading(false);
   //       if(error.status === 401){
-  //         toggleError(true);
+  //         toggleSnackbar(true);
   //       }else{
-  //         setError(error.data ? error.data.message : 'Error occured');
+  //         toggleSnackbar(error.data ? error.data.message : 'Error occured');
   //       }
   //     }
   //   }
@@ -255,8 +259,6 @@ const FormDialog = (props) => {
 
   return (
     <div>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message={isNew ? 'User added' : 'User updated'} onClose={handleSnackbarClose}></Snackbar>
-
       <Dialog maxWidth={'md'} disableBackdropClick={true} disableEscapeKeyDown={true} open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">{isNew ? 'Add User' : 'Edit User'}</DialogTitle>
         <DialogContent>

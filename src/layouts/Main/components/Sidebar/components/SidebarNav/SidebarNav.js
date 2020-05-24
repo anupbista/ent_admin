@@ -1,11 +1,12 @@
 /* eslint-disable react/no-multi-comp */
 /* eslint-disable react/display-name */
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useContext } from 'react';
 import { NavLink as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
 import { List, ListItem, Button, colors } from '@material-ui/core';
+import { GlobalContext } from '../../../../../../contexts/GlobalContext';
 
 const useStyles = makeStyles(theme => ({
   root: {},
@@ -52,8 +53,8 @@ const CustomRouterLink = forwardRef((props, ref) => (
 ));
 
 const SidebarNav = props => {
-  const { pages, className, ...rest } = props;
-
+  const { close, pages, className, ...rest } = props;
+  const { toggleSetMobileOpen } = useContext(GlobalContext);
   const classes = useStyles();
 
   return (
@@ -68,6 +69,7 @@ const SidebarNav = props => {
           key={page.title}
         >
           <Button
+          onClick={close ? toggleSetMobileOpen : null}
             activeClassName={classes.active}
             className={classes.button}
             component={CustomRouterLink}

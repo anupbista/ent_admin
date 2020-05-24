@@ -4,8 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { GenreTable } from './components';
 import API from '../../services/api';
 import { GlobalContext } from '../../contexts/GlobalContext';
-import { ErrorContext } from '../../contexts/ErrorContext';
-import { Snackbar } from '@material-ui/core';
+import { SnackbarContext } from '../../contexts/SnackbarContext';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -21,14 +20,13 @@ const GenreList = () => {
 
   const [genres, setMovies] = useState([]);
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
-  const [error, setError] = useState(false);
+  const { toggleSnackbar } = useContext(SnackbarContext);
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
 
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: true },
     { id: 'Actions', numeric: false, disablePadding: false, label: 'Actions', sort: false },
   ];
-
 
   const fetchData = async () => {
     try {
@@ -42,13 +40,14 @@ const GenreList = () => {
       let res = await API.get('/genre', options);
       setMovies(res.data)
       toggleLoading(false);
-      setError(false);
     } catch (error) {
       toggleLoading(false);
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
+      }else{
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
-      setError(error.data ? error.data.message : 'Error occured');
+      toggleSnackbar(true);
      }
   }
 
@@ -60,14 +59,9 @@ const GenreList = () => {
     fetchData();
   }, [])
 
-  const handleSnackbarClose = () => {
-    setError(null)
-  }
-
   return (
     <div className={classes.root}>
       <div className={classes.content}>
-      <Snackbar open={error ? true : false} autoHideDuration={3000} message={error ? error : 'Error Occured'} onClose={handleSnackbarClose}></Snackbar>
         <GenreTable onClose={closeFormDialog} headCells={headCells} genres={genres} />
       </div>
     </div>

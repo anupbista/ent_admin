@@ -19,9 +19,8 @@ import FormDialog from '../FormDialog';
 import BooksToolbar from '../BooksToolbar';
 import DeleteDialog from '../../../../components/DialogDelete';
 import API from '../../../../services/api';
-import Snackbar from '@material-ui/core/Snackbar';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
-import { ErrorContext } from '../../../../contexts/ErrorContext';
+import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -96,11 +95,11 @@ const BooksTable = props => {
   const [deleteModalOpen, setDeleteModal] = useState(false);
   const [book, setMovie] = useState(null);
   const [isNew, setIsNew] = useState(false);
-  const [error, setError] = useState(false)
+   const { toggleSnackbarMsg } = useContext(SnackbarContext);
   const [submitted, setSubmitted] = useState(false)
 
   const { toggleLoading } = useContext(GlobalContext);
-  const { toggleError } = useContext(ErrorContext);
+  const { toggleSnackbar } = useContext(SnackbarContext);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -184,27 +183,24 @@ const BooksTable = props => {
       setSubmitted(true);
       setSelected([])
       toggleLoading(false);
-      setError(false);
+      toggleSnackbarMsg('Book Deleted')
+      toggleSnackbar(true);
       props.onClose(true);
     } catch (error) {
       setSubmitted(false);
       toggleLoading(false)
       setDeleteModal(false)
       if(error.status === 401){
-        toggleError(true);
+        toggleSnackbarMsg('Unauthorized')
       }else{
-        setError(error.data ? error.data.message : 'Error occured');
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
-      console.log(error)
+      toggleSnackbar(true);
     }
   }
 
   const onClose = () => {
     setDeleteModal(false)
-  }
-
-  const handleSnackbarClose = () => {
-    setSubmitted(false)
   }
 
   const onSearchChangeHandler = (inputValue) => {
@@ -222,7 +218,6 @@ const BooksTable = props => {
 
   return (
     <div className={classes.root}>
-      <Snackbar open={submitted && !error} autoHideDuration={3000} message="Book deleted" onClose={handleSnackbarClose}></Snackbar>
       <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleMovieDelete} onClose={onClose} />
       <FormDialog modalOpen={modalOpen} book={book} onClose={handleDialogClose} isNew={isNew} />
       <BooksToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
