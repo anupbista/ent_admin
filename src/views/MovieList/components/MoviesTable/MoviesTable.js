@@ -180,7 +180,7 @@ const MoviesTable = props => {
           'Authorization': localStorage.getItem('access_token') ? 'Bearer ' + localStorage.getItem('access_token') : ''
         }
       };
-      await API.delete('/' + 'movies/' + selected.join(','), options);
+      await API.delete('/movies/' + selected.join(','), options);
       setSubmitted(true);
       setSelected([])
       toggleLoading(false);

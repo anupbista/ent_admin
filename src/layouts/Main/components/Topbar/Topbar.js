@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
@@ -7,8 +7,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import API from '../../../../services/api';
 import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import history from '../../../../services/history';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Grow from '@material-ui/core/Grow';
+import MenuList from '@material-ui/core/MenuList';
+import Paper from '@material-ui/core/Paper';
+import Popper from '@material-ui/core/Popper';import history from '../../../../services/history';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
 import { SnackbarContext } from '../../../../contexts/SnackbarContext';
 
@@ -45,14 +48,15 @@ const useStyles = makeStyles(theme => ({
 
 const Topbar = props => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [open, setOpen] = React.useState(false);
+  const anchorRef = React.useRef(null);
+
   const { className, ...rest } = props;
   const { toggleLoading, toggleSetMobileOpen } = useContext(GlobalContext);
-  const { toggleSnackbar } = useContext(SnackbarContext);
+  const { toggleSnackbar, toggleSnackbarMsg } = useContext(SnackbarContext);
 
   const onLogout = async (props) => {
     let userid = localStorage.getItem('userid')
-    handleClose();
     try {
       if (userid) {
         toggleLoading(true)
@@ -65,27 +69,54 @@ const Topbar = props => {
         await API.get('/auth/logout/' + userid, options);
         toggleLoading(false)
         localStorage.clear()
+        toggleSnackbar(true);
+        toggleSnackbarMsg('Logged out')
         history.push('/login');
       } else {
         localStorage.clear()
+        toggleSnackbar(true);
+        toggleSnackbarMsg('Unauthorized')
         history.push('/login');
       }
     } catch (error) {
       if (error.status === 401) {
-        toggleSnackbar(true);
+        toggleSnackbarMsg('Unauthorized')
+      }else{
+        toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
+      toggleSnackbar(true);
       localStorage.clear()
       history.push('/login');
     }
   }
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleClose = (event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+
+    setOpen(false);
   };
+
+  function handleListKeyDown(event) {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      setOpen(false);
+    }
+  }
+
+  const prevOpen = React.useRef(open);
+  React.useEffect(() => {
+    if (prevOpen.current === true && open === false) {
+      anchorRef.current.focus();
+    }
+
+    prevOpen.current = open;
+  }, [open]);
 
   return (
     <AppBar
@@ -112,19 +143,29 @@ const Topbar = props => {
         <div className={classes.flexGrow} />
         <IconButton
           color="inherit"
-          onClick={handleClick}
+          onClick={handleToggle}
+          ref={anchorRef}
+          aria-controls={open ? 'menu-list-grow' : undefined}
+          aria-haspopup="true"
         >
           <AccountCircleIcon />
         </IconButton>
-        <Menu className={classes.customWidth}
-          id="simple-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={onLogout}>Logout</MenuItem>
-        </Menu>
+        <Popper className={classes.customWidth} open={open} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
+          {({ TransitionProps, placement }) => (
+            <Grow
+              {...TransitionProps}
+              style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+            >
+              <Paper>
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MenuList autoFocusItem={open} id="menu-list-grow" onKeyDown={handleListKeyDown}>
+                    <MenuItem onClick={onLogout}>Logout</MenuItem>
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )}
+        </Popper>
       </Toolbar>
     </AppBar>
   );

@@ -30,7 +30,7 @@ const MovieList = () => {
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: true },
     { id: 'description', numeric: false, disablePadding: false, label: 'Description', sort: true },
-    { id: 'releasedate', numeric: false, disablePadding: false, label: 'Releasedate', sort: true },
+    { id: 'releasedate', numeric: false, disablePadding: false, label: 'Release date', sort: true },
     { id: 'rating', numeric: false, disablePadding: false, label: 'Rating', sort: true },
     { id: 'Actions', numeric: false, disablePadding: false, label: 'Actions', sort: false },
   ];
@@ -55,7 +55,7 @@ const MovieList = () => {
       }else{
         toggleSnackbarMsg(error.data ? error.data.message : 'Error occured');
       }
-      toggleSnackbar(true);
+    toggleSnackbar(true);
      }
     }
 

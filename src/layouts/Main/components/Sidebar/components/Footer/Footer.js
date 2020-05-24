@@ -2,17 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
-import { Typography, Link } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    padding: theme.spacing(4)
+    padding: theme.spacing(2)
   }
 }));
 
 const Footer = props => {
   const { className, ...rest } = props;
-
+  const date = new Date().getFullYear();
   const classes = useStyles();
 
   return (
@@ -22,18 +22,11 @@ const Footer = props => {
     >
       <Typography variant="body1">
         &copy;{' '}
-        <Link
-          component="a"
-          href="https://devias.io/"
-          target="_blank"
-        >
-          Devias IO
-        </Link>
-        . 2019
+        SANDR
+        . {date}
       </Typography>
       <Typography variant="caption">
-        Created with love for the environment. By designers and developers who
-        love to work together in offices!
+        Created with love for the environment.
       </Typography>
     </div>
   );

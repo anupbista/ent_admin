@@ -6,7 +6,7 @@ import { Divider, Drawer, Hidden } from '@material-ui/core';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import PeopleIcon from '@material-ui/icons/People';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
-import { Profile, SidebarNav } from './components';
+import { Profile, SidebarNav, Footer } from './components';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import TheatersIcon from '@material-ui/icons/Theaters';
 import ClassIcon from '@material-ui/icons/Class';
@@ -20,7 +20,8 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    justifyContent: 'space-between'
   },
   drawer: {
     [theme.breakpoints.up('sm')]: {
@@ -94,6 +95,7 @@ const Sidebar = props => {
             {...rest}
             className={clsx(classes.root, className)}
           >
+            <div>
             <Profile user={user} />
             <Divider className={classes.divider} />
             <SidebarNav
@@ -101,6 +103,9 @@ const Sidebar = props => {
               className={classes.nav}
               pages={pages}
             />
+             <Divider className={classes.divider} />
+            </div>
+            <Footer />
           </div>
         </Drawer>
       </Hidden>
@@ -114,13 +119,17 @@ const Sidebar = props => {
             {...rest}
             className={clsx(classes.root, className)}
           >
-            <Profile user={user} />
+           <div>
+           <Profile user={user} />
             <Divider className={classes.divider} />
             <SidebarNav
               close={false}
               className={classes.nav}
               pages={pages}
             />
+            <Divider className={classes.divider} />
+           </div>
+            <Footer />
           </div>
         </Drawer>
       </Hidden>

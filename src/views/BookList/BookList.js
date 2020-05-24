@@ -26,7 +26,7 @@ const BookList = () => {
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: true },
     { id: 'description', numeric: false, disablePadding: false, label: 'Description', sort: true },
-    { id: 'releasedate', numeric: false, disablePadding: false, label: 'Releasedate', sort: true },
+    { id: 'releasedate', numeric: false, disablePadding: false, label: 'Release date', sort: true },
     { id: 'author', numeric: false, disablePadding: false, label: 'Author', sort: true },
     { id: 'publisher', numeric: false, disablePadding: false, label: 'Publisher', sort: true },
     { id: 'Actions', numeric: false, disablePadding: false, label: 'Actions', sort: false },
