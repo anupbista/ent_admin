@@ -79,6 +79,7 @@ const Topbar = props => {
         history.push('/login');
       }
     } catch (error) {
+      toggleLoading(false)
       if (error.status === 401) {
         toggleSnackbarMsg('Unauthorized')
       }else{
