@@ -348,6 +348,7 @@ const FormDialog = (props) => {
               /> */}
               <DatePicker
                 views={["year"]}
+                disableFuture={true}
                 label="Released date"
                 value={moment(formState.values.releasedate) || new Date()}
                 inputVariant="outlined"
