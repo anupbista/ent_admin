@@ -43,7 +43,7 @@ const BookList = () => {
         }
       };
       let res = await API.get('/books', options);
-      setMovies(res.data)
+      setMovies(res.data.data)
       toggleLoading(false);
     } catch (error) {
       toggleLoading(false);
