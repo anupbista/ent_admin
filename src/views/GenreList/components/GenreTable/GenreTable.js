@@ -169,7 +169,7 @@ const GenreTable = props => {
     setDeleteModal(true)
   }
 
-  const handleMovieDelete = async () => {
+  const handleGenreDelete = async () => {
     try {
       setDeleteModal(false);
       toggleLoading(true);
@@ -218,7 +218,7 @@ const GenreTable = props => {
 
   return (
     <div className={classes.root}>
-      <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleMovieDelete} onClose={onClose} />
+      <DeleteDialog deleteModalOpen={deleteModalOpen} confirmDelete={handleGenreDelete} onClose={onClose} />
       <FormDialog modalOpen={modalOpen} genre={genre} onClose={handleDialogClose} isNew={isNew} />
       <GenreToolbar onClose={handleEditClickOpen} onOpen={onSearchChangeHandler} />
       <Paper className={classes.paper}>

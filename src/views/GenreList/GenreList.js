@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 const GenreList = () => {
   const classes = useStyles();
 
-  const [genres, setMovies] = useState([]);
+  const [genres, setGenre] = useState([]);
   const { toggleLoading } = useContext(GlobalContext);
   const { toggleSnackbar } = useContext(SnackbarContext);
    const { toggleSnackbarMsg } = useContext(SnackbarContext);
@@ -38,7 +38,7 @@ const GenreList = () => {
         }
       };
       let res = await API.get('/genre', options);
-      setMovies(res.data)
+      setGenre(res.data)
       toggleLoading(false);
     } catch (error) {
       toggleLoading(false);

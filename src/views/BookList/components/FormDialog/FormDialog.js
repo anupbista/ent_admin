@@ -113,7 +113,7 @@ const FormDialog = (props) => {
   });
 
   useEffect(() => {
-    let mbook = {}
+    let mbook = {downloadtext: 'Download', readtext: "Read"}
     if(props.book && props.book.id){
       mbook = {}
       // let imagepath = props.book.imagepath ? props.book.imagepath.split('/') : null
@@ -173,7 +173,7 @@ const FormDialog = (props) => {
   const handleClose = () => {
     setFormState({
       isValid: false,
-      values: {country: '', genre: ''},
+      values: {country: '', genre: '', downloadtext: 'Download', readtext: "Read"},
       touched: {},
       errors: {}
     })
@@ -235,7 +235,7 @@ const FormDialog = (props) => {
       toggleSnackbar(true);
       setFormState({
         isValid: false,
-        values: {},
+        values: {downloadtext: 'Download', readtext: "Read"},
         touched: {},
         errors: {}
       })

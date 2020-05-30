@@ -6,7 +6,9 @@ import LatestMovies from './components/LatestMovies';
 import LatestBooks from './components/LatestBooks';
 import PeopleIcon from '@material-ui/icons/People';
 import TheatersIcon from '@material-ui/icons/Theaters';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
+import YouTubeIcon from '@material-ui/icons/YouTube';
 import { SnackbarContext } from '../../contexts/SnackbarContext';
 import { GlobalContext } from '../../contexts/GlobalContext';
 import API from '../../services/api';
@@ -32,9 +34,10 @@ const Dashboard = () => {
   const { toggleLoading } = useContext(GlobalContext);
   const { toggleSnackbar, toggleSnackbarMsg } = useContext(SnackbarContext);
   const [ dashboardData, setDashboardData ] = useState({
-    usersData: {},
+    videosData: {},
     moviesData: {},
-    booksData: {}
+    booksData: {},
+    gamesData: {}
   });
 
   useEffect(() => {
@@ -48,14 +51,16 @@ const Dashboard = () => {
           }
         };
         const data = await Promise.all([
-          API.get('/users/dashboard', options),
           API.get('/movies/dashboard', options),
           API.get('/books/dashboard', options),
+          API.get('/games/dashboard', options),
+          API.get('/youtubevideos/dashboard', options),
         ]);
         setDashboardData({
-          usersData: data[0].data,
-          moviesData: data[1].data,
-          booksData: data[2].data
+          moviesData: data[0].data,
+          booksData: data[1].data,
+          gamesData: data[2].data,
+          videosData: data[3].data,
         })
         toggleLoading(false)
       } catch (error) {
@@ -80,17 +85,23 @@ const Dashboard = () => {
         justify="center"
         spacing={4}
       >
-        <Grid item lg={4} xs={6}>
-          <Count count={dashboardData.usersData.count} name={'ADMIN USERS'} icon={<PeopleIcon />} />
-        </Grid>
 
-        <Grid item lg={4} xs={6}>
+        <Grid item lg={3} xs={6}>
           <Count count={dashboardData.moviesData.count} name={'MOVIES'} icon={<TheatersIcon />} />
         </Grid>
 
-        <Grid item lg={4} xs={12}>
+        <Grid item lg={3} xs={6}>
           <Count count={dashboardData.booksData.count} name={'BOOKS'} icon={<MenuBookIcon />} />
         </Grid>
+
+        <Grid item lg={3} xs={6}>
+          <Count count={dashboardData.gamesData.count} name={'GAMES'} icon={<SportsEsportsIcon />} />
+        </Grid>
+
+        <Grid item lg={3} xs={6}>
+          <Count count={dashboardData.videosData.count} name={'VIDEOS'} icon={<YouTubeIcon />} />
+        </Grid>
+
         <Grid
           item
           lg={6}

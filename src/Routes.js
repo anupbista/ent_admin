@@ -8,8 +8,13 @@ import {
   Dashboard as DashboardView,
   UserList as UserListView,
   MovieList as MovieListView,
+  GameList as GameListView,
   BookList as BookListView,
   GenreList as GenreListView,
+  CategoryList as CategoryListView,
+  YouTubeCategoryList as YouTubeCategoryListView,
+  YouTubeChannelList as YouTubeChannelListView,
+  YouTubeVideoList as YouTubeVideoListView,
   Account as AccountView,
   SignIn as SignInView,
   NotFound as NotFoundView
@@ -50,6 +55,41 @@ const Routes = () => {
         authGuard={true}
         layout={MainLayout}
         path="/genre"
+      />
+      <RouteWithLayout
+        component={GameListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/games"
+      />
+       <RouteWithLayout
+        component={CategoryListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/category"
+      />
+      <RouteWithLayout
+        component={YouTubeCategoryListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/youtubecategory"
+      />
+       <RouteWithLayout
+        component={YouTubeChannelListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/youtubechannels"
+      />
+       <RouteWithLayout
+        component={YouTubeVideoListView}
+        exact
+        authGuard={true}
+        layout={MainLayout}
+        path="/youtubevideos"
       />
        <RouteWithLayout
         component={BookListView}

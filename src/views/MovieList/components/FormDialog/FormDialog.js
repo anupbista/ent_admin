@@ -112,7 +112,7 @@ const FormDialog = (props) => {
   });
 
   useEffect(() => {
-    let mmovie = {country: '', genre: ''}
+    let mmovie = {country: '', genre: '', downloadtext: 'Download', watchtext: 'Watch'}
     if(props.movie && props.movie.id){
       mmovie = {}
       // let imagepath = props.movie.imagepath ? props.movie.imagepath.split('/') : null
@@ -172,7 +172,7 @@ const FormDialog = (props) => {
   const handleClose = () => {
     setFormState({
       isValid: false,
-      values: {country: '', genre: ''},
+      values: {country: '', genre: '', downloadtext: 'Download', watchtext: 'Watch'},
       touched: {},
       errors: {}
     })
@@ -244,7 +244,7 @@ const FormDialog = (props) => {
       props.onClose(true);
       setFormState({
         isValid: false,
-        values: {country: '', genre: ''},
+        values: {country: '', genre: '', downloadtext: 'Download', watchtext: 'Watch'},
         touched: {},
         errors: {}
       })

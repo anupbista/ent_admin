@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const UsersToolbar = props => {
+const GenreToolbar = props => {
   const { className, onOpen, ...rest } = props;
   const [searchInput, setSearchInput] = useState(null);
   const classes = useStyles();
@@ -86,8 +86,8 @@ const UsersToolbar = props => {
   );
 };
 
-UsersToolbar.propTypes = {
+GenreToolbar.propTypes = {
   className: PropTypes.string
 };
 
-export default UsersToolbar;
+export default GenreToolbar;

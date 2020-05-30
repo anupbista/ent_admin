@@ -6,3 +6,8 @@ export { default as BookList } from './BookList';
 export { default as MovieList } from './MovieList';
 export { default as UserList } from './UserList';
 export { default as GenreList } from './GenreList';
+export { default as CategoryList } from './CategoryList';
+export { default as GameList } from './GameList';
+export { default as YouTubeCategoryList } from './YouTubeCategoryList';
+export { default as YouTubeChannelList } from './YouTubeChannelList';
+export { default as YouTubeVideoList } from './YouTubeVideoList';

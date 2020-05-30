@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, Children } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
@@ -9,7 +9,12 @@ import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import { Profile, SidebarNav, Footer } from './components';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import TheatersIcon from '@material-ui/icons/Theaters';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import CategoryIcon from '@material-ui/icons/Category';
+import VideocamIcon from '@material-ui/icons/Videocam';
+import PersonIcon from '@material-ui/icons/Person';
 import ClassIcon from '@material-ui/icons/Class';
+import YouTubeIcon from '@material-ui/icons/YouTube';
 import { GlobalContext } from '../../../../contexts/GlobalContext';
 
 const drawerWidth = 240;
@@ -51,32 +56,86 @@ const Sidebar = props => {
     {
       title: 'Dashboard',
       href: '/dashboard',
-      icon: <DashboardIcon />
+      icon: <DashboardIcon />,
+      children: []
     },
     {
       title: 'Users',
       href: '/users',
-      icon: <PeopleIcon />
+      icon: <PeopleIcon />,
+      children: []
     },
     {
       title: 'Movies',
       href: '/movies',
-      icon: <TheatersIcon />
-    },
-    {
-      title: 'Genre',
-      href: '/genre',
-      icon: <ClassIcon />
+      icon: <TheatersIcon />,
+      children: [
+        {
+          title: 'Movies',
+          href: '/movies',
+          icon: <TheatersIcon />,
+          children: []
+        },
+        {
+          title: 'Genre',
+          href: '/genre',
+          icon: <ClassIcon />,
+          children: []
+        },
+      ]
     },
     {
       title: 'Books',
       href: '/books',
-      icon: <MenuBookIcon />
+      icon: <MenuBookIcon />,
+      children: []
+    },
+    {
+      title: 'Games',
+      href: '/games',
+      icon: <SportsEsportsIcon />,
+      children: [
+        {
+          title: 'Games',
+          href: '/games',
+          icon: <SportsEsportsIcon />,
+          children: []
+        },
+        {
+          title: 'Category',
+          href: '/category',
+          icon: <CategoryIcon />
+        }
+      ]
+    },
+    {
+      title: 'Youtube',
+      href: '/youtubevideos',
+      icon: <YouTubeIcon />,
+      children: [
+        {
+          title: 'Videos',
+          href: '/youtubevideos',
+          icon: <VideocamIcon />,
+          children: []
+        },
+        {
+          title: 'Category',
+          href: '/youtubecategory',
+          icon: <CategoryIcon />
+        },
+        {
+          title: 'Channels',
+          href: '/youtubechannels',
+          icon: <PersonIcon />
+        }
+      ]
     },
     {
       title: 'Account',
       href: '/account',
-      icon: <AccountBoxIcon />
+      icon: <AccountBoxIcon />,
+      children: []
     }
   ];
 
