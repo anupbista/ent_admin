@@ -42,7 +42,7 @@ const BookList = () => {
             'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
         }
       };
-      let res = await API.get('/books', options);
+      let res = await API.get('/books?limit=0', options);
       setMovies(res.data.data)
       toggleLoading(false);
     } catch (error) {

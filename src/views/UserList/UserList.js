@@ -40,7 +40,7 @@ const UserList = () => {
           'Authorization' : localStorage.getItem('access_token') ? 'Bearer '+ localStorage.getItem('access_token'): '' 
       }
     };
-    let res = await API.get('/users', options);
+    let res = await API.get('/users?limit=0', options);
     toggleLoading(false);
     setUsers(res.data)
    } catch (error) {
