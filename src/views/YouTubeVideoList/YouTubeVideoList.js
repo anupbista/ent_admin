@@ -29,7 +29,8 @@ const YouTubeVideoList = () => {
 
   const headCells = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name', sort: true },
-    { id: 'channel', numeric: false, disablePadding: false, label: 'Channel', sort: true }
+    { id: 'channel', numeric: false, disablePadding: false, label: 'Channel', sort: true },
+     { id: 'Actions', numeric: false, disablePadding: false, label: 'Actions', sort: false }
   ];
 
 
