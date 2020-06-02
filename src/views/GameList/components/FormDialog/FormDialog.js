@@ -344,15 +344,15 @@ const FormDialog = (props) => {
                 value={formState.values.name || ''}
                 variant="outlined"
               />
-              <DatePicker
+              {/* <DatePicker
                 views={["year"]}
                 disableFuture={true}
                 label="Released date"
                 value={moment(formState.values.releasedate) || new Date()}
                 inputVariant="outlined"
                 onChange={handleDateChange}
-              />
-              {/* <TextField
+              /> */}
+              <TextField
                 className={classes.textField}
                 error={hasError('releasedate')}
                 fullWidth
@@ -365,7 +365,7 @@ const FormDialog = (props) => {
                 type="text"
                 value={formState.values.releasedate || ''}
                 variant="outlined"
-              /> */}
+              />
             </div>
             <TextField
                 className={classes.textField}
