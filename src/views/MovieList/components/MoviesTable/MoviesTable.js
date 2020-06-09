@@ -55,6 +55,10 @@ const useStyles = makeStyles(theme => ({
   paper: {
     width: '100%',
     marginBottom: theme.spacing(2),
+    marginTop: 30,
+    [theme.breakpoints.down('sm')]: {
+      marginTop: 55
+    }
   },
   table: {
     minWidth: 750,
@@ -212,10 +216,10 @@ const MoviesTable = props => {
     setmMovies(movies)
     setmMovies(movies.filter(movie => {
       return (
-        movie.name.toLowerCase().search(searchInput.toLowerCase()) !== -1
+      movie.name.toLowerCase().search(searchInput ? searchInput.toLowerCase() : '') !== -1
       );
     }))
-  }, [movies,searchInput])
+  }, [movies, searchInput])
 
   return (
     <div className={classes.root}>

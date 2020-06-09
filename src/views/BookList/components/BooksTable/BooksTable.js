@@ -54,6 +54,10 @@ const useStyles = makeStyles(theme => ({
   paper: {
     width: '100%',
     marginBottom: theme.spacing(2),
+    marginTop: 30,
+    [theme.breakpoints.down('sm')]: {
+      marginTop: 55
+    }
   },
   table: {
     minWidth: 750,
