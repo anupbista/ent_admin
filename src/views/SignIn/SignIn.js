@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%'
   },
   logoImge:{
-    width: '60%',
+    width: '50%',
     marginBottom: 50
   },
   content: {
@@ -81,8 +81,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
   title: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3)
+    marginTop: theme.spacing(3)
   },
   textField: {
     marginTop: theme.spacing(4)
@@ -189,7 +188,7 @@ const SignIn = props => {
                 <Box justifyContent="center" display="flex">
                  <img className={classes.logoImge}
                     alt="Logo"
-                    src="/images/logos/logo-blue.png"
+                    src="/images/logos/logo-white.png"
                   />
                  </Box>
                   <Typography

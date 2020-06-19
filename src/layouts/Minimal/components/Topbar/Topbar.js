@@ -10,7 +10,7 @@ const useStyles = makeStyles(() => ({
     boxShadow: 'none'
   },
   logo:{
-    width: '40%'
+    width: 90
   }
 }));
 
